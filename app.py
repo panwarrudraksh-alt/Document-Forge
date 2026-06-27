@@ -20,15 +20,15 @@ st.set_page_config(
 # ---- Custom CSS ----
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
     * {
-        font-family: 'Outfit', sans-serif;
+        font-family: 'Inter', sans-serif;
         box-sizing: border-box;
     }
 
     .main {
-        background: linear-gradient(135deg, #f5f7fa 0%, #e9edf2 100%);
+        background: #f4f6fb;
         padding: 0;
     }
 
@@ -39,25 +39,26 @@ st.markdown("""
 
     /* ---- Header ---- */
     .app-header {
-        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
         padding: 2rem 2.8rem;
-        border-radius: 18px;
+        border-radius: 20px;
         margin-bottom: 2rem;
-        box-shadow: 0 12px 30px rgba(30, 60, 114, 0.3);
-        animation: fadeInDown 0.8s ease forwards;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.25);
+        animation: fadeInDown 0.7s ease forwards;
+        border-bottom: 4px solid #38bdf8;
     }
     .app-header h1 {
         font-weight: 700;
         font-size: 2.8rem;
         margin: 0;
         letter-spacing: -0.5px;
-        color: white;
+        color: #f8fafc;
     }
     .app-header p {
         margin: 0.3rem 0 0;
-        opacity: 0.9;
+        opacity: 0.85;
         font-size: 1.1rem;
-        color: #dce3f0;
+        color: #cbd5e1;
     }
 
     /* ---- Cards ---- */
@@ -66,7 +67,7 @@ st.markdown("""
         border-radius: 16px;
         padding: 2rem 1.2rem;
         text-align: center;
-        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
         border: 1px solid rgba(0, 0, 0, 0.04);
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         cursor: default;
@@ -76,8 +77,8 @@ st.markdown("""
     }
     .doc-card:hover {
         transform: translateY(-8px);
-        box-shadow: 0 20px 40px rgba(30, 60, 114, 0.12);
-        border-color: #2a5298;
+        box-shadow: 0 20px 40px rgba(15, 23, 42, 0.12);
+        border-color: #38bdf8;
     }
     .doc-card .icon {
         font-size: 3rem;
@@ -87,54 +88,66 @@ st.markdown("""
     .doc-card .title {
         font-weight: 600;
         font-size: 1.15rem;
-        color: #1e3c72;
+        color: #0f172a;
         margin: 0.3rem 0;
     }
     .doc-card .desc {
         font-size: 0.85rem;
-        color: #6c757d;
+        color: #64748b;
         margin-top: 0.2rem;
     }
 
     /* ---- Buttons ---- */
     .stButton > button {
-        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
         color: white;
         border: none;
-        border-radius: 10px;
+        border-radius: 12px;
         font-weight: 500;
         padding: 0.6rem 1.5rem;
         transition: all 0.25s ease;
         width: 100%;
-        box-shadow: 0 4px 12px rgba(42, 82, 152, 0.2);
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
     }
     .stButton > button:hover {
         transform: scale(1.02);
-        box-shadow: 0 8px 24px rgba(42, 82, 152, 0.35);
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.25);
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
     }
 
     /* ---- Sidebar ---- */
     .css-1d391kg {
-        background: linear-gradient(180deg, #1a2a4a 0%, #0f1a30 100%);
+        background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+        border-right: 1px solid #334155;
     }
     .css-1d391kg .stRadio label {
-        color: #dce3f0;
+        color: #cbd5e1;
         font-weight: 400;
+        padding: 0.4rem 0.8rem;
+        border-radius: 8px;
+        transition: all 0.2s;
     }
     .css-1d391kg .stRadio label:hover {
+        background: rgba(56, 189, 248, 0.1);
         color: white;
     }
+    .css-1d391kg .stRadio label[data-selected="true"] {
+        background: rgba(56, 189, 248, 0.15);
+        color: #38bdf8;
+        font-weight: 500;
+    }
     .css-1d391kg .stMetric {
-        background: rgba(255, 255, 255, 0.06);
+        background: rgba(255, 255, 255, 0.05);
         border-radius: 10px;
         padding: 0.6rem;
         backdrop-filter: blur(4px);
+        border: 1px solid #334155;
     }
     .css-1d391kg .stMetric label {
-        color: #b0c4de !important;
+        color: #94a3b8 !important;
     }
     .css-1d391kg .stMetric .stMetricValue {
-        color: white !important;
+        color: #f8fafc !important;
         font-weight: 600;
     }
 
@@ -146,51 +159,53 @@ st.markdown("""
         border-radius: 10px;
         padding: 0.5rem 1.2rem;
         font-weight: 500;
-        background: #f1f3f5;
+        background: #e2e8f0;
         transition: all 0.2s;
+        color: #1e293b;
     }
     .stTabs [data-baseweb="tab"]:hover {
-        background: #e2e6ea;
+        background: #cbd5e1;
     }
     .stTabs [data-baseweb="tab"][aria-selected="true"] {
-        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        background: #0f172a;
         color: white;
     }
 
-    /* ---- Inputs ---- */
+    /* ---- Inputs & TextArea ---- */
     .stTextInput > div > div > input,
     .stTextArea > div > div > textarea,
     .stSelectbox > div > div {
         border-radius: 10px !important;
-        border: 1.5px solid #dde1e6 !important;
+        border: 2px solid #e2e8f0 !important;
+        background: white !important;
+        color: #0f172a !important;
         transition: border-color 0.3s, box-shadow 0.3s;
+        padding: 0.6rem 1rem !important;
     }
     .stTextInput > div > div > input:focus,
     .stTextArea > div > div > textarea:focus {
-        border-color: #2a5298 !important;
-        box-shadow: 0 0 0 3px rgba(42, 82, 152, 0.1);
+        border-color: #38bdf8 !important;
+        box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.15);
+    }
+    .stTextInput > div > div > input::placeholder,
+    .stTextArea > div > div > textarea::placeholder {
+        color: #94a3b8;
     }
 
-    /* ---- Preview box ---- */
-    .preview-box {
-        background: white;
-        border: 1px solid #dee2e6;
-        border-radius: 12px;
-        padding: 1.2rem;
-        min-height: 160px;
+    /* ---- Labels ---- */
+    .stTextInput label,
+    .stTextArea label,
+    .stSelectbox label {
+        color: #0f172a !important;
+        font-weight: 500;
         font-size: 0.9rem;
-        line-height: 1.7;
-        white-space: pre-wrap;
-        overflow-y: auto;
-        max-height: 350px;
-        box-shadow: inset 0 2px 6px rgba(0,0,0,0.02);
     }
 
-    /* ---- Skill tags ---- */
+    /* ---- Skill Tags ---- */
     .skill-tag {
         display: inline-block;
-        background: #e7f3ff;
-        color: #1e3c72;
+        background: #e2e8f0;
+        color: #0f172a;
         padding: 0.2rem 0.8rem;
         border-radius: 30px;
         font-size: 0.78rem;
@@ -199,7 +214,7 @@ st.markdown("""
         transition: all 0.2s;
     }
     .skill-tag:hover {
-        background: #2a5298;
+        background: #0f172a;
         color: white;
         transform: scale(1.05);
     }
@@ -226,11 +241,32 @@ st.markdown("""
         }
     }
 
-    /* ---- Utility to set animation delay via style attribute ---- */
+    /* ---- Utility ---- */
     .delay-1 { animation-delay: 0.1s; }
     .delay-2 { animation-delay: 0.2s; }
     .delay-3 { animation-delay: 0.3s; }
     .delay-4 { animation-delay: 0.4s; }
+    .delay-5 { animation-delay: 0.5s; }
+
+    /* ---- Section Cards ---- */
+    .section-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+        border: 1px solid #e2e8f0;
+        margin-bottom: 1.5rem;
+    }
+
+    /* ---- Info boxes ---- */
+    .info-box {
+        background: #f1f5f9;
+        border-radius: 10px;
+        padding: 1rem 1.2rem;
+        color: #0f172a;
+        font-size: 0.9rem;
+        border-left: 4px solid #38bdf8;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -248,7 +284,7 @@ with st.sidebar:
     <div style="text-align:center; padding:1.2rem 0 0.8rem 0;">
         <div style="font-size:2.8rem;">📄</div>
         <div style="font-weight:700; font-size:1.5rem; color:white; letter-spacing:-0.5px;">DocForge</div>
-        <div style="color:#b0c4de; font-size:0.85rem; margin-top:0.2rem;">Professional Documents</div>
+        <div style="color:#94a3b8; font-size:0.85rem; margin-top:0.2rem;">Professional Documents</div>
     </div>
     """, unsafe_allow_html=True)
     st.markdown("---")
@@ -327,28 +363,28 @@ if page == "🏠 Home":
         """, unsafe_allow_html=True)
 
     st.markdown("""
-    <div style="background:white; border-radius:16px; padding:1.8rem; margin-top:2.5rem; box-shadow:0 8px 24px rgba(0,0,0,0.04);">
-        <h3 style="color:#1e3c72; font-weight:600;">🚀 How It Works</h3>
+    <div class="section-card" style="margin-top:2.5rem;">
+        <h3 style="color:#0f172a; font-weight:600;">🚀 How It Works</h3>
         <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap:1.5rem; margin-top:1.2rem;">
             <div style="text-align:center;">
                 <div style="font-size:2.2rem;">1️⃣</div>
                 <div><strong>Enter Details</strong></div>
-                <div style="color:#6c757d; font-size:0.85rem;">Fill once</div>
+                <div style="color:#64748b; font-size:0.85rem;">Fill once</div>
             </div>
             <div style="text-align:center;">
                 <div style="font-size:2.2rem;">2️⃣</div>
                 <div><strong>Choose Document</strong></div>
-                <div style="color:#6c757d; font-size:0.85rem;">Select type</div>
+                <div style="color:#64748b; font-size:0.85rem;">Select type</div>
             </div>
             <div style="text-align:center;">
                 <div style="font-size:2.2rem;">3️⃣</div>
                 <div><strong>Customize</strong></div>
-                <div style="color:#6c757d; font-size:0.85rem;">Add specifics</div>
+                <div style="color:#64748b; font-size:0.85rem;">Add specifics</div>
             </div>
             <div style="text-align:center;">
                 <div style="font-size:2.2rem;">4️⃣</div>
                 <div><strong>Download PDF</strong></div>
-                <div style="color:#6c757d; font-size:0.85rem;">Instant professional PDF</div>
+                <div style="color:#64748b; font-size:0.85rem;">Instant professional PDF</div>
             </div>
         </div>
     </div>
