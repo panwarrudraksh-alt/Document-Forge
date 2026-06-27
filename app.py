@@ -11,13 +11,13 @@ from job_scraper import get_jobs
 
 # ---- Page Config ----
 st.set_page_config(
-    page_title="DocForge – Professional Document Builder",
+    page_title="DocForge AI – Professional Document Studio",
     page_icon="📄",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# ---- Custom CSS (Theme-Aware) ----
+# ---- Custom CSS (All Text Black, Light Backgrounds) ----
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
@@ -25,66 +25,64 @@ st.markdown("""
     * {
         font-family: 'Inter', sans-serif;
         box-sizing: border-box;
+        color: #0f172a !important;
     }
 
     .stApp {
         background:
             radial-gradient(circle at top left, rgba(56,189,248,.15), transparent 35%),
-            linear-gradient(135deg, var(--bg-start), var(--bg-end));
+            linear-gradient(135deg,#f8fafc,#eef2ff);
         padding: 0;
     }
 
-    /* Light theme defaults */
-    :root {
-        --bg-start: #f8fafc;
-        --bg-end: #eef2ff;
-        --text-color: #000000;
-        --card-bg: rgba(255,255,255,0.85);
-        --card-border: rgba(148,163,184,0.2);
-        --sidebar-bg: #f1f5f9;
-        --sidebar-border: #d1d5db;
-        --input-bg: #ffffff;
-        --input-border: #e2e8f0;
-        --tab-bg: #e2e8f0;
-        --tab-selected: #2563eb;
-        --header-bg: linear-gradient(135deg,#0f172a,#1d4ed8);
-        --header-text: #ffffff;
-        --header-subtext: #dbeafe;
-        --btn-bg: linear-gradient(135deg,#2563eb,#06b6d4);
-        --btn-text: #ffffff;
-        --alert-bg: #f1f5f9;
+    
+    /* Premium modern dashboard polish */
+    .stApp {
+        min-height: 100vh;
     }
 
-    /* Dark theme overrides */
-    [data-theme="dark"] {
-        --bg-start: #0f172a;
-        --bg-end: #1e293b;
-        --text-color: #f1f5f9;
-        --card-bg: rgba(30,41,59,0.85);
-        --card-border: rgba(255,255,255,0.1);
-        --sidebar-bg: #0f172a;
-        --sidebar-border: #334155;
-        --input-bg: #1e293b;
-        --input-border: #475569;
-        --tab-bg: #1e293b;
-        --tab-selected: #3b82f6;
-        --header-bg: linear-gradient(135deg,#0f172a,#1d4ed8);
-        --header-text: #ffffff;
-        --header-subtext: #bfdbfe;
-        --btn-bg: linear-gradient(135deg,#3b82f6,#06b6d4);
-        --btn-text: #ffffff;
-        --alert-bg: #1e293b;
+    .app-header {
+        position: relative;
+        overflow: hidden;
     }
 
-    .block-container {
+    .app-header:after {
+        content: "";
+        position: absolute;
+        width: 220px;
+        height: 220px;
+        right: -60px;
+        top: -70px;
+        background: rgba(255,255,255,.12);
+        border-radius: 50%;
+    }
+
+    .section-card {
+        transition: .3s ease;
+    }
+
+    .section-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 25px 55px rgba(15,23,42,.12);
+    }
+
+    .stMetric {
+        background: rgba(255,255,255,.75);
+        padding: 12px;
+        border-radius: 18px;
+        border: 1px solid rgba(148,163,184,.25);
+    }
+
+.block-container {
         padding-top: 2rem;
         padding-bottom: 3rem;
         max-width: 1400px;
     }
 
-    /* Header */
+    /* Header – keep white text on dark gradient */
     .app-header {
-        background: var(--header-bg);
+        background:
+            linear-gradient(135deg,#0f172a,#1d4ed8);
         padding: 2.4rem 3rem;
         border-radius: 28px;
         box-shadow: 0 25px 60px rgba(15,23,42,.25);
@@ -93,29 +91,28 @@ st.markdown("""
         animation: fade .5s ease;
     }
     .app-header h1 {
-        color: var(--header-text) !important;
+        color: white !important; /* override black */
         font-size: 2.8rem;
         font-weight: 800;
         letter-spacing: -1px;
         margin: 0;
     }
     .app-header p {
-        color: var(--header-subtext) !important;
+        color: #dbeafe !important; /* light blue */
         font-size: 1.1rem;
         margin: 0.3rem 0 0;
     }
 
-    /* Cards */
+    /* Cards – light background, black text */
     .doc-card,
     .section-card {
-        background: var(--card-bg);
+        background: rgba(255,255,255,.85);
         backdrop-filter: blur(12px);
         border-radius: 24px;
-        border: 1px solid var(--card-border);
+        border: 1px solid rgba(148,163,184,.2);
         box-shadow: 0 15px 35px rgba(15,23,42,.08);
         transition: .3s ease;
         animation: fade .5s ease;
-        color: var(--text-color) !important;
     }
     .doc-card {
         padding: 2rem 1.2rem;
@@ -132,17 +129,17 @@ st.markdown("""
         font-size: 3.2rem;
         display: block;
         margin-bottom: 0.5rem;
-        color: var(--text-color) !important;
+        color: #000 !important;
     }
     .doc-card .title {
         font-size: 1.2rem;
         font-weight: 700;
         margin: 0.3rem 0;
-        color: var(--text-color) !important;
+        color: #000 !important;
     }
     .doc-card .desc {
         font-size: 0.85rem;
-        color: var(--text-color) !important;
+        color: #000 !important;
     }
 
     .section-card {
@@ -152,13 +149,13 @@ st.markdown("""
     .section-card h3 {
         font-weight: 700;
         margin-top: 0;
-        color: var(--text-color) !important;
+        color: #000 !important;
     }
     .section-card div {
-        color: var(--text-color) !important;
+        color: #000 !important;
     }
 
-    /* Buttons */
+    /* Buttons – keep white text on gradient */
     .stButton button,
     .stDownloadButton button {
         width: 100%;
@@ -166,8 +163,8 @@ st.markdown("""
         border-radius: 14px !important;
         padding: .75rem 1.2rem !important;
         font-weight: 700 !important;
-        color: var(--btn-text) !important;
-        background: var(--btn-bg) !important;
+        color: white !important;
+        background: linear-gradient(135deg,#2563eb,#06b6d4) !important;
         box-shadow: 0 10px 25px rgba(37,99,235,.25);
         transition: .25s ease;
     }
@@ -177,14 +174,14 @@ st.markdown("""
         box-shadow: 0 18px 35px rgba(37,99,235,.35);
     }
 
-    /* Inputs */
+    /* Inputs & TextAreas – light background, black text */
     .stTextInput > div > div > input,
     .stTextArea > div > div > textarea,
     .stSelectbox > div > div {
         border-radius: 14px !important;
-        border: 2px solid var(--input-border) !important;
-        background: var(--input-bg) !important;
-        color: var(--text-color) !important;
+        border: 2px solid #e2e8f0 !important;
+        background: white !important;
+        color: #000 !important;
         padding: 0.6rem 1rem !important;
         font-size: 0.95rem;
         transition: border-color .3s, box-shadow .3s;
@@ -197,42 +194,41 @@ st.markdown("""
     .stTextInput label,
     .stTextArea label,
     .stSelectbox label {
-        color: var(--text-color) !important;
+        color: #000 !important;
         font-weight: 600 !important;
         font-size: 0.9rem;
     }
 
-    /* Tabs */
+    /* Tabs – light background, black text */
     .stTabs [data-baseweb="tab-list"] {
         gap: .7rem;
     }
     .stTabs [data-baseweb="tab"] {
         border-radius: 14px;
-        background: var(--tab-bg);
+        background: #e2e8f0;
         padding: .6rem 1.3rem;
-        color: var(--text-color) !important;
+        color: #000 !important;
         font-weight: 600;
         transition: .2s;
     }
     .stTabs [data-baseweb="tab"]:hover {
-        background: var(--tab-selected);
-        color: #fff !important;
+        background: #cbd5e1;
     }
     .stTabs [data-baseweb="tab"][aria-selected="true"] {
-        background: var(--tab-selected) !important;
-        color: #fff !important;
+        background: #2563eb !important;
+        color: white !important; /* selected tab text white on blue */
     }
 
-    /* Sidebar */
+    /* Sidebar – now light background, black text */
     section[data-testid="stSidebar"] {
-        background: var(--sidebar-bg) !important;
-        border-right: 1px solid var(--sidebar-border);
+        background: #f1f5f9 !important;
+        border-right: 1px solid #d1d5db;
     }
     section[data-testid="stSidebar"] * {
-        color: var(--text-color) !important;
+        color: #000 !important;
     }
     section[data-testid="stSidebar"] .stRadio label {
-        color: var(--text-color) !important;
+        color: #000 !important;
         font-weight: 400;
         padding: 0.4rem 0.8rem;
         border-radius: 8px;
@@ -250,29 +246,28 @@ st.markdown("""
         background: rgba(255,255,255,.8);
         border-radius: 16px;
         padding: 10px;
-        border: 1px solid var(--sidebar-border);
+        border: 1px solid #d1d5db;
     }
     section[data-testid="stSidebar"] .stMetric label {
-        color: var(--text-color) !important;
+        color: #000 !important;
     }
     section[data-testid="stSidebar"] .stMetric .stMetricValue {
-        color: var(--text-color) !important;
+        color: #000 !important;
         font-weight: 600;
     }
     section[data-testid="stSidebar"] .stCaption {
-        color: var(--text-color) !important;
+        color: #000 !important;
     }
 
-    /* Alerts */
+    /* Alerts – black text on light background */
     .stAlert {
         border-radius: 16px;
-        background: var(--alert-bg) !important;
     }
     .stAlert > div {
-        color: var(--text-color) !important;
+        color: #000 !important;
     }
 
-    /* Skill tags */
+    /* Skill tags – dark text on light background */
     .skill-tag {
         display: inline-block;
         background: #e2e8f0;
@@ -286,7 +281,7 @@ st.markdown("""
     }
     .skill-tag:hover {
         background: #2563eb;
-        color: #fff !important;
+        color: white !important;
         transform: scale(1.05);
     }
 
@@ -322,8 +317,8 @@ with st.sidebar:
     st.markdown("""
     <div style="text-align:center; padding:1.2rem 0 0.8rem 0;">
         <div style="font-size:2.8rem;">📄</div>
-        <div style="font-weight:700; font-size:1.5rem; letter-spacing:-0.5px;">DocForge</div>
-        <div style="font-size:0.85rem; margin-top:0.2rem; opacity:0.7;">Professional Documents</div>
+        <div style="font-weight:700; font-size:1.5rem; color:#0f172a; letter-spacing:-0.5px;">DocForge</div>
+        <div style="color:#000; font-size:0.85rem; margin-top:0.2rem;">Professional Documents</div>
     </div>
     """, unsafe_allow_html=True)
     st.markdown("---")
@@ -408,22 +403,22 @@ if page == "🏠 Home":
             <div style="text-align:center;">
                 <div style="font-size:2.2rem;">1️⃣</div>
                 <div><strong>Enter Details</strong></div>
-                <div style="font-size:0.85rem; opacity:0.7;">Fill once</div>
+                <div style="color:#000; font-size:0.85rem;">Fill once</div>
             </div>
             <div style="text-align:center;">
                 <div style="font-size:2.2rem;">2️⃣</div>
                 <div><strong>Choose Document</strong></div>
-                <div style="font-size:0.85rem; opacity:0.7;">Select type</div>
+                <div style="color:#000; font-size:0.85rem;">Select type</div>
             </div>
             <div style="text-align:center;">
                 <div style="font-size:2.2rem;">3️⃣</div>
                 <div><strong>Customize</strong></div>
-                <div style="font-size:0.85rem; opacity:0.7;">Add specifics</div>
+                <div style="color:#000; font-size:0.85rem;">Add specifics</div>
             </div>
             <div style="text-align:center;">
                 <div style="font-size:2.2rem;">4️⃣</div>
                 <div><strong>Download PDF</strong></div>
-                <div style="font-size:0.85rem; opacity:0.7;">Instant professional PDF</div>
+                <div style="color:#000; font-size:0.85rem;">Instant professional PDF</div>
             </div>
         </div>
     </div>
