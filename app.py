@@ -17,7 +17,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ---- Custom CSS (Rustic Radiance Theme + Custom Cursor) ----
+# ---- Custom CSS (Rustic Radiance – Darker Backgrounds) ----
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
@@ -31,46 +31,44 @@ st.markdown("""
     body, .stApp {
         cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="12" fill="%23b85d3a" stroke="%232b1a10" stroke-width="2"/><circle cx="16" cy="16" r="5" fill="%232b1a10"/></svg>') 16 16, auto;
     }
-    /* Interactive elements – same cursor with a pointer tail */
     a, button, .stButton button, .stDownloadButton button, .stRadio label, .doc-card {
         cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="12" fill="%23b85d3a" stroke="%232b1a10" stroke-width="2"/><circle cx="16" cy="16" r="5" fill="%232b1a10"/><path d="M20 20 L28 28" stroke="%232b1a10" stroke-width="2"/></svg>') 16 16, pointer;
     }
-    /* Text inputs get default I‑beam */
     input, textarea, .stTextInput input, .stTextArea textarea {
         cursor: text !important;
     }
 
-    /* ---------- Rustic Radiance Theme variables ---------- */
+    /* ---------- Rustic Radiance – Darker Backgrounds ---------- */
     :root {
-        --bg-start: #faf0e6;
-        --bg-end: #f5e1d0;
+        --bg-start: #f0d5c0;      /* slightly darker cream */
+        --bg-end: #e8c4aa;        /* warmer, deeper beige */
         --text-color: #2b1a10;
         --text-light: #5a3a28;
-        --card-bg: rgba(255,245,235,0.85);
-        --card-border: rgba(184,93,58,0.3);
-        --sidebar-bg: #f5e1d0;
-        --sidebar-border: #d4b096;
-        --input-bg: #fffcf8;
-        --input-border: #d4b096;
-        --tab-bg: #f0ddd0;
+        --card-bg: rgba(255,245,235,0.88);
+        --card-border: rgba(184,93,58,0.35);
+        --sidebar-bg: #e8c4aa;
+        --sidebar-border: #c4a088;
+        --input-bg: #fffaf5;
+        --input-border: #c4a088;
+        --tab-bg: #edd9c8;
         --tab-selected: #b85d3a;
         --header-bg: linear-gradient(135deg, #6b3a24, #b85d3a);
         --header-text: #ffffff;
         --header-subtext: #f5e1d0;
         --btn-bg: linear-gradient(135deg, #c46a44, #d4845a);
         --btn-text: #2b1a10;
-        --alert-bg: #f5e1d0;
-        --shadow-color: rgba(107,58,36,0.25);
+        --alert-bg: #edd9c8;
+        --shadow-color: rgba(107,58,36,0.3);
     }
 
     [data-theme="dark"] {
         --bg-start: #2b1a10;
-        --bg-end: #3d2a1c;
+        --bg-end: #3d2a1c;       /* same dark, but we'll darken slightly */
         --text-color: #faf0e6;
         --text-light: #d4b096;
-        --card-bg: rgba(60,42,28,0.85);
-        --card-border: rgba(184,93,58,0.3);
-        --sidebar-bg: #2b1a10;
+        --card-bg: rgba(50,35,25,0.88);
+        --card-border: rgba(184,93,58,0.35);
+        --sidebar-bg: #1f130c;    /* darker */
         --sidebar-border: #5a3a28;
         --input-bg: #3d2a1c;
         --input-border: #5a3a28;
@@ -81,8 +79,8 @@ st.markdown("""
         --header-subtext: #d4b096;
         --btn-bg: linear-gradient(135deg, #c46a44, #d4845a);
         --btn-text: #2b1a10;
-        --alert-bg: #3d2a1c;
-        --shadow-color: rgba(0,0,0,0.4);
+        --alert-bg: #2b1a10;
+        --shadow-color: rgba(0,0,0,0.5);
     }
 
     .stApp {
@@ -141,7 +139,7 @@ st.markdown("""
     }
     .doc-card:hover {
         transform: translateY(-10px);
-        box-shadow: 0 25px 50px rgba(184,93,58,0.3);
+        box-shadow: 0 25px 50px rgba(184,93,58,0.35);
         border-color: #b85d3a;
     }
     .doc-card .icon {
@@ -190,7 +188,7 @@ st.markdown("""
     .stButton button:hover,
     .stDownloadButton button:hover {
         transform: translateY(-3px);
-        box-shadow: 0 18px 35px rgba(184,93,58,0.4);
+        box-shadow: 0 18px 35px rgba(184,93,58,0.45);
     }
 
     /* Inputs */
@@ -208,7 +206,7 @@ st.markdown("""
     .stTextInput > div > div > input:focus,
     .stTextArea > div > div > textarea:focus {
         border-color: #b85d3a !important;
-        box-shadow: 0 0 0 4px rgba(184,93,58,0.2) !important;
+        box-shadow: 0 0 0 4px rgba(184,93,58,0.25) !important;
     }
     .stTextInput label,
     .stTextArea label,
@@ -255,10 +253,10 @@ st.markdown("""
         transition: .2s;
     }
     section[data-testid="stSidebar"] .stRadio label:hover {
-        background: rgba(184,93,58,0.15);
+        background: rgba(184,93,58,0.2);
     }
     section[data-testid="stSidebar"] .stRadio label[data-selected="true"] {
-        background: rgba(184,93,58,0.2);
+        background: rgba(184,93,58,0.25);
         color: #8a4a2e !important;
         font-weight: 500;
     }
@@ -291,7 +289,7 @@ st.markdown("""
     /* Skill tags */
     .skill-tag {
         display: inline-block;
-        background: #f0ddd0;
+        background: #edd9c8;
         color: #2b1a10 !important;
         padding: 0.2rem 0.8rem;
         border-radius: 30px;
