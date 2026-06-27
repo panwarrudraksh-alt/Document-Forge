@@ -17,7 +17,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ---- Custom CSS (All Text Black, Light Backgrounds) ----
+# ---- Custom CSS (Theme-Aware) ----
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
@@ -25,14 +25,55 @@ st.markdown("""
     * {
         font-family: 'Inter', sans-serif;
         box-sizing: border-box;
-        color: #000000 !important; /* Force all text to black */
     }
 
     .stApp {
         background:
             radial-gradient(circle at top left, rgba(56,189,248,.15), transparent 35%),
-            linear-gradient(135deg,#f8fafc,#eef2ff);
+            linear-gradient(135deg, var(--bg-start), var(--bg-end));
         padding: 0;
+    }
+
+    /* Light theme defaults */
+    :root {
+        --bg-start: #f8fafc;
+        --bg-end: #eef2ff;
+        --text-color: #000000;
+        --card-bg: rgba(255,255,255,0.85);
+        --card-border: rgba(148,163,184,0.2);
+        --sidebar-bg: #f1f5f9;
+        --sidebar-border: #d1d5db;
+        --input-bg: #ffffff;
+        --input-border: #e2e8f0;
+        --tab-bg: #e2e8f0;
+        --tab-selected: #2563eb;
+        --header-bg: linear-gradient(135deg,#0f172a,#1d4ed8);
+        --header-text: #ffffff;
+        --header-subtext: #dbeafe;
+        --btn-bg: linear-gradient(135deg,#2563eb,#06b6d4);
+        --btn-text: #ffffff;
+        --alert-bg: #f1f5f9;
+    }
+
+    /* Dark theme overrides */
+    [data-theme="dark"] {
+        --bg-start: #0f172a;
+        --bg-end: #1e293b;
+        --text-color: #f1f5f9;
+        --card-bg: rgba(30,41,59,0.85);
+        --card-border: rgba(255,255,255,0.1);
+        --sidebar-bg: #0f172a;
+        --sidebar-border: #334155;
+        --input-bg: #1e293b;
+        --input-border: #475569;
+        --tab-bg: #1e293b;
+        --tab-selected: #3b82f6;
+        --header-bg: linear-gradient(135deg,#0f172a,#1d4ed8);
+        --header-text: #ffffff;
+        --header-subtext: #bfdbfe;
+        --btn-bg: linear-gradient(135deg,#3b82f6,#06b6d4);
+        --btn-text: #ffffff;
+        --alert-bg: #1e293b;
     }
 
     .block-container {
@@ -41,10 +82,9 @@ st.markdown("""
         max-width: 1400px;
     }
 
-    /* Header – keep white text on dark gradient */
+    /* Header */
     .app-header {
-        background:
-            linear-gradient(135deg,#0f172a,#1d4ed8);
+        background: var(--header-bg);
         padding: 2.4rem 3rem;
         border-radius: 28px;
         box-shadow: 0 25px 60px rgba(15,23,42,.25);
@@ -53,28 +93,29 @@ st.markdown("""
         animation: fade .5s ease;
     }
     .app-header h1 {
-        color: white !important; /* override black */
+        color: var(--header-text) !important;
         font-size: 2.8rem;
         font-weight: 800;
         letter-spacing: -1px;
         margin: 0;
     }
     .app-header p {
-        color: #dbeafe !important; /* light blue */
+        color: var(--header-subtext) !important;
         font-size: 1.1rem;
         margin: 0.3rem 0 0;
     }
 
-    /* Cards – light background, black text */
+    /* Cards */
     .doc-card,
     .section-card {
-        background: rgba(255,255,255,.85);
+        background: var(--card-bg);
         backdrop-filter: blur(12px);
         border-radius: 24px;
-        border: 1px solid rgba(148,163,184,.2);
+        border: 1px solid var(--card-border);
         box-shadow: 0 15px 35px rgba(15,23,42,.08);
         transition: .3s ease;
         animation: fade .5s ease;
+        color: var(--text-color) !important;
     }
     .doc-card {
         padding: 2rem 1.2rem;
@@ -91,17 +132,17 @@ st.markdown("""
         font-size: 3.2rem;
         display: block;
         margin-bottom: 0.5rem;
-        color: #000 !important;
+        color: var(--text-color) !important;
     }
     .doc-card .title {
         font-size: 1.2rem;
         font-weight: 700;
         margin: 0.3rem 0;
-        color: #000 !important;
+        color: var(--text-color) !important;
     }
     .doc-card .desc {
         font-size: 0.85rem;
-        color: #000 !important;
+        color: var(--text-color) !important;
     }
 
     .section-card {
@@ -111,13 +152,13 @@ st.markdown("""
     .section-card h3 {
         font-weight: 700;
         margin-top: 0;
-        color: #000 !important;
+        color: var(--text-color) !important;
     }
     .section-card div {
-        color: #000 !important;
+        color: var(--text-color) !important;
     }
 
-    /* Buttons – keep white text on gradient */
+    /* Buttons */
     .stButton button,
     .stDownloadButton button {
         width: 100%;
@@ -125,8 +166,8 @@ st.markdown("""
         border-radius: 14px !important;
         padding: .75rem 1.2rem !important;
         font-weight: 700 !important;
-        color: white !important;
-        background: linear-gradient(135deg,#2563eb,#06b6d4) !important;
+        color: var(--btn-text) !important;
+        background: var(--btn-bg) !important;
         box-shadow: 0 10px 25px rgba(37,99,235,.25);
         transition: .25s ease;
     }
@@ -136,14 +177,14 @@ st.markdown("""
         box-shadow: 0 18px 35px rgba(37,99,235,.35);
     }
 
-    /* Inputs & TextAreas – light background, black text */
+    /* Inputs */
     .stTextInput > div > div > input,
     .stTextArea > div > div > textarea,
     .stSelectbox > div > div {
         border-radius: 14px !important;
-        border: 2px solid #e2e8f0 !important;
-        background: white !important;
-        color: #000 !important;
+        border: 2px solid var(--input-border) !important;
+        background: var(--input-bg) !important;
+        color: var(--text-color) !important;
         padding: 0.6rem 1rem !important;
         font-size: 0.95rem;
         transition: border-color .3s, box-shadow .3s;
@@ -156,41 +197,42 @@ st.markdown("""
     .stTextInput label,
     .stTextArea label,
     .stSelectbox label {
-        color: #000 !important;
+        color: var(--text-color) !important;
         font-weight: 600 !important;
         font-size: 0.9rem;
     }
 
-    /* Tabs – light background, black text */
+    /* Tabs */
     .stTabs [data-baseweb="tab-list"] {
         gap: .7rem;
     }
     .stTabs [data-baseweb="tab"] {
         border-radius: 14px;
-        background: #e2e8f0;
+        background: var(--tab-bg);
         padding: .6rem 1.3rem;
-        color: #000 !important;
+        color: var(--text-color) !important;
         font-weight: 600;
         transition: .2s;
     }
     .stTabs [data-baseweb="tab"]:hover {
-        background: #cbd5e1;
+        background: var(--tab-selected);
+        color: #fff !important;
     }
     .stTabs [data-baseweb="tab"][aria-selected="true"] {
-        background: #2563eb !important;
-        color: white !important; /* selected tab text white on blue */
+        background: var(--tab-selected) !important;
+        color: #fff !important;
     }
 
-    /* Sidebar – now light background, black text */
+    /* Sidebar */
     section[data-testid="stSidebar"] {
-        background: #f1f5f9 !important;
-        border-right: 1px solid #d1d5db;
+        background: var(--sidebar-bg) !important;
+        border-right: 1px solid var(--sidebar-border);
     }
     section[data-testid="stSidebar"] * {
-        color: #000 !important;
+        color: var(--text-color) !important;
     }
     section[data-testid="stSidebar"] .stRadio label {
-        color: #000 !important;
+        color: var(--text-color) !important;
         font-weight: 400;
         padding: 0.4rem 0.8rem;
         border-radius: 8px;
@@ -208,28 +250,29 @@ st.markdown("""
         background: rgba(255,255,255,.8);
         border-radius: 16px;
         padding: 10px;
-        border: 1px solid #d1d5db;
+        border: 1px solid var(--sidebar-border);
     }
     section[data-testid="stSidebar"] .stMetric label {
-        color: #000 !important;
+        color: var(--text-color) !important;
     }
     section[data-testid="stSidebar"] .stMetric .stMetricValue {
-        color: #000 !important;
+        color: var(--text-color) !important;
         font-weight: 600;
     }
     section[data-testid="stSidebar"] .stCaption {
-        color: #000 !important;
+        color: var(--text-color) !important;
     }
 
-    /* Alerts – black text on light background */
+    /* Alerts */
     .stAlert {
         border-radius: 16px;
+        background: var(--alert-bg) !important;
     }
     .stAlert > div {
-        color: #000 !important;
+        color: var(--text-color) !important;
     }
 
-    /* Skill tags – dark text on light background */
+    /* Skill tags */
     .skill-tag {
         display: inline-block;
         background: #e2e8f0;
@@ -243,7 +286,7 @@ st.markdown("""
     }
     .skill-tag:hover {
         background: #2563eb;
-        color: white !important;
+        color: #fff !important;
         transform: scale(1.05);
     }
 
@@ -279,8 +322,8 @@ with st.sidebar:
     st.markdown("""
     <div style="text-align:center; padding:1.2rem 0 0.8rem 0;">
         <div style="font-size:2.8rem;">📄</div>
-        <div style="font-weight:700; font-size:1.5rem; color:#000; letter-spacing:-0.5px;">DocForge</div>
-        <div style="color:#000; font-size:0.85rem; margin-top:0.2rem;">Professional Documents</div>
+        <div style="font-weight:700; font-size:1.5rem; letter-spacing:-0.5px;">DocForge</div>
+        <div style="font-size:0.85rem; margin-top:0.2rem; opacity:0.7;">Professional Documents</div>
     </div>
     """, unsafe_allow_html=True)
     st.markdown("---")
@@ -365,22 +408,22 @@ if page == "🏠 Home":
             <div style="text-align:center;">
                 <div style="font-size:2.2rem;">1️⃣</div>
                 <div><strong>Enter Details</strong></div>
-                <div style="color:#000; font-size:0.85rem;">Fill once</div>
+                <div style="font-size:0.85rem; opacity:0.7;">Fill once</div>
             </div>
             <div style="text-align:center;">
                 <div style="font-size:2.2rem;">2️⃣</div>
                 <div><strong>Choose Document</strong></div>
-                <div style="color:#000; font-size:0.85rem;">Select type</div>
+                <div style="font-size:0.85rem; opacity:0.7;">Select type</div>
             </div>
             <div style="text-align:center;">
                 <div style="font-size:2.2rem;">3️⃣</div>
                 <div><strong>Customize</strong></div>
-                <div style="color:#000; font-size:0.85rem;">Add specifics</div>
+                <div style="font-size:0.85rem; opacity:0.7;">Add specifics</div>
             </div>
             <div style="text-align:center;">
                 <div style="font-size:2.2rem;">4️⃣</div>
                 <div><strong>Download PDF</strong></div>
-                <div style="color:#000; font-size:0.85rem;">Instant professional PDF</div>
+                <div style="font-size:0.85rem; opacity:0.7;">Instant professional PDF</div>
             </div>
         </div>
     </div>
