@@ -1,5 +1,6 @@
 import streamlit as st
 from datetime import datetime
+import time
 from pdf_generator import (
     generate_resume_pdf,
     generate_cv_pdf,
@@ -17,321 +18,550 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ---- Custom CSS (Rustic Radiance – Darker Backgrounds + Visible Placeholders) ----
+# ---- Custom CSS (AgentForge-inspired design) ----
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    /* ===== Font & Reset ===== */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
     * {
         font-family: 'Inter', sans-serif;
         box-sizing: border-box;
+        margin: 0;
+        padding: 0;
     }
 
-    /* ---------- Custom Cursor ---------- */
+    /* ===== Custom Cursor ===== */
     body, .stApp {
-        cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="12" fill="%23b85d3a" stroke="%232b1a10" stroke-width="2"/><circle cx="16" cy="16" r="5" fill="%232b1a10"/></svg>') 16 16, auto;
+        cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="12" fill="%2333a3dc" stroke="%231a2a3a" stroke-width="2"/><circle cx="16" cy="16" r="5" fill="%231a2a3a"/></svg>') 16 16, auto;
     }
     a, button, .stButton button, .stDownloadButton button, .stRadio label, .doc-card {
-        cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="12" fill="%23b85d3a" stroke="%232b1a10" stroke-width="2"/><circle cx="16" cy="16" r="5" fill="%232b1a10"/><path d="M20 20 L28 28" stroke="%232b1a10" stroke-width="2"/></svg>') 16 16, pointer;
+        cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="12" fill="%2333a3dc" stroke="%231a2a3a" stroke-width="2"/><circle cx="16" cy="16" r="5" fill="%231a2a3a"/><path d="M20 20 L28 28" stroke="%231a2a3a" stroke-width="2"/></svg>') 16 16, pointer;
     }
-    input, textarea, .stTextInput input, .stTextArea textarea {
+    input, textarea {
         cursor: text !important;
     }
 
-    /* ---------- Theme variables (Rustic Radiance, darker) ---------- */
+    /* ===== Theme Variables ===== */
     :root {
-        --bg-start: #f0d5c0;
-        --bg-end: #e8c4aa;
-        --text-color: #2b1a10;
-        --text-light: #5a3a28;
-        --card-bg: rgba(255,245,235,0.88);
-        --card-border: rgba(184,93,58,0.35);
-        --sidebar-bg: #e8c4aa;
-        --sidebar-border: #c4a088;
-        --input-bg: #fffaf5;
-        --input-border: #c4a088;
-        --tab-bg: #edd9c8;
-        --tab-selected: #b85d3a;
-        --header-bg: linear-gradient(135deg, #6b3a24, #b85d3a);
+        --bg-start: #f0f4f8;
+        --bg-end: #d9e2ec;
+        --text-color: #102a43;
+        --text-light: #486581;
+        --card-bg: rgba(255,255,255,0.85);
+        --card-border: rgba(51,163,220,0.25);
+        --sidebar-bg: #d9e2ec;
+        --sidebar-border: #b0c4de;
+        --input-bg: #ffffff;
+        --input-border: #b0c4de;
+        --tab-bg: #e1e8f0;
+        --tab-selected: #1e6f9f;
+        --header-bg: linear-gradient(135deg, #0b2b44, #1e6f9f);
         --header-text: #ffffff;
-        --header-subtext: #f5e1d0;
-        --btn-bg: linear-gradient(135deg, #c46a44, #d4845a);
-        --btn-text: #2b1a10;
-        --alert-bg: #edd9c8;
-        --shadow-color: rgba(107,58,36,0.3);
-        --placeholder-color: #7a6a5a;  /* visible brown-gray */
+        --header-subtext: #d9e2ec;
+        --btn-bg: linear-gradient(135deg, #1e6f9f, #33a3dc);
+        --btn-text: #ffffff;
+        --alert-bg: #e1e8f0;
+        --shadow-color: rgba(11,43,68,0.2);
+        --placeholder-color: #7a8fa6;
+        --primary: #1e6f9f;
+        --primary-light: #33a3dc;
+        --primary-dark: #0b2b44;
+        --section-bg: #f0f4f8;
     }
 
     [data-theme="dark"] {
-        --bg-start: #2b1a10;
-        --bg-end: #3d2a1c;
-        --text-color: #faf0e6;
-        --text-light: #d4b096;
-        --card-bg: rgba(50,35,25,0.88);
-        --card-border: rgba(184,93,58,0.35);
-        --sidebar-bg: #1f130c;
-        --sidebar-border: #5a3a28;
-        --input-bg: #3d2a1c;
-        --input-border: #5a3a28;
-        --tab-bg: #3d2a1c;
-        --tab-selected: #d4845a;
-        --header-bg: linear-gradient(135deg, #4a2a18, #8a4a2e);
+        --bg-start: #0b2b44;
+        --bg-end: #1a2a3a;
+        --text-color: #f0f4f8;
+        --text-light: #b0c4de;
+        --card-bg: rgba(26,42,58,0.85);
+        --card-border: rgba(51,163,220,0.25);
+        --sidebar-bg: #1a2a3a;
+        --sidebar-border: #2a4a6a;
+        --input-bg: #1a2a3a;
+        --input-border: #2a4a6a;
+        --tab-bg: #1a2a3a;
+        --tab-selected: #33a3dc;
+        --header-bg: linear-gradient(135deg, #0b2b44, #1e6f9f);
         --header-text: #ffffff;
-        --header-subtext: #d4b096;
-        --btn-bg: linear-gradient(135deg, #c46a44, #d4845a);
-        --btn-text: #2b1a10;
-        --alert-bg: #2b1a10;
-        --shadow-color: rgba(0,0,0,0.5);
-        --placeholder-color: #b0a090;  /* lighter for dark background */
+        --header-subtext: #b0c4de;
+        --btn-bg: linear-gradient(135deg, #1e6f9f, #33a3dc);
+        --btn-text: #ffffff;
+        --alert-bg: #1a2a3a;
+        --shadow-color: rgba(0,0,0,0.4);
+        --placeholder-color: #8aa0b8;
+        --primary: #33a3dc;
+        --primary-light: #66c2e8;
+        --primary-dark: #1a4a6a;
+        --section-bg: #1a2a3a;
     }
 
+    /* ===== Global Layout ===== */
     .stApp {
         background:
-            radial-gradient(circle at top left, rgba(184,93,58,0.12), transparent 35%),
+            radial-gradient(circle at top left, rgba(51,163,220,0.08), transparent 40%),
             linear-gradient(135deg, var(--bg-start), var(--bg-end));
         padding: 0;
     }
 
     .block-container {
-        padding-top: 2rem;
-        padding-bottom: 3rem;
+        padding-top: 0.5rem;
+        padding-bottom: 2rem;
         max-width: 1400px;
     }
 
-    /* Header */
-    .app-header {
-        background: var(--header-bg);
-        padding: 2.4rem 3rem;
-        border-radius: 28px;
-        box-shadow: 0 25px 60px var(--shadow-color);
-        border: 1px solid rgba(255,255,255,.15);
-        margin-bottom: 2rem;
-        animation: fade .5s ease;
-    }
-    .app-header h1 {
-        color: var(--header-text) !important;
-        font-size: 2.8rem;
-        font-weight: 800;
-        letter-spacing: -1px;
-        margin: 0;
-    }
-    .app-header p {
-        color: var(--header-subtext) !important;
-        font-size: 1.1rem;
-        margin: 0.3rem 0 0;
-    }
-
-    /* Cards */
-    .doc-card,
-    .section-card {
+    /* ===== Header / Navigation (Sticky) ===== */
+    .custom-nav {
         background: var(--card-bg);
         backdrop-filter: blur(12px);
-        border-radius: 24px;
-        border: 1px solid var(--card-border);
-        box-shadow: 0 15px 35px var(--shadow-color);
-        transition: .3s ease;
-        animation: fade .5s ease;
-        color: var(--text-color) !important;
+        border-bottom: 1px solid var(--card-border);
+        padding: 0.5rem 2rem;
+        border-radius: 0;
+        margin-bottom: 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        transition: background 0.3s;
     }
-    .doc-card {
-        padding: 2rem 1.2rem;
-        text-align: center;
-        height: 100%;
-        cursor: default;
+    .custom-nav .logo {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 800;
+        font-size: 1.5rem;
+        color: var(--text-color);
+        text-decoration: none;
     }
-    .doc-card:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 25px 50px rgba(184,93,58,0.35);
-        border-color: #b85d3a;
+    .custom-nav .logo img {
+        height: 2rem;
     }
-    .doc-card .icon {
-        font-size: 3.2rem;
-        display: block;
-        margin-bottom: 0.5rem;
-        color: var(--text-color) !important;
+    .custom-nav .nav-links {
+        display: flex;
+        gap: 1.5rem;
+        align-items: center;
+        flex-wrap: wrap;
     }
-    .doc-card .title {
-        font-size: 1.2rem;
-        font-weight: 700;
-        margin: 0.3rem 0;
-        color: var(--text-color) !important;
-    }
-    .doc-card .desc {
-        font-size: 0.85rem;
-        color: var(--text-light) !important;
-    }
-
-    .section-card {
-        padding: 1.5rem;
-        margin-top: 2rem;
-    }
-    .section-card h3 {
-        font-weight: 700;
-        margin-top: 0;
-        color: var(--text-color) !important;
-    }
-    .section-card div {
-        color: var(--text-light) !important;
-    }
-
-    /* Buttons */
-    .stButton button,
-    .stDownloadButton button {
-        width: 100%;
-        border: none !important;
-        border-radius: 14px !important;
-        padding: .75rem 1.2rem !important;
-        font-weight: 700 !important;
-        color: var(--btn-text) !important;
-        background: var(--btn-bg) !important;
-        box-shadow: 0 10px 25px var(--shadow-color);
-        transition: .25s ease;
-    }
-    .stButton button:hover,
-    .stDownloadButton button:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 18px 35px rgba(184,93,58,0.45);
-    }
-
-    /* Inputs */
-    .stTextInput > div > div > input,
-    .stTextArea > div > div > textarea,
-    .stSelectbox > div > div {
-        border-radius: 14px !important;
-        border: 2px solid var(--input-border) !important;
-        background: var(--input-bg) !important;
-        color: var(--text-color) !important;
-        padding: 0.6rem 1rem !important;
+    .custom-nav .nav-links a {
+        color: var(--text-light);
+        text-decoration: none;
+        font-weight: 500;
         font-size: 0.95rem;
-        transition: border-color .3s, box-shadow .3s;
+        transition: color 0.2s;
     }
-    .stTextInput > div > div > input:focus,
-    .stTextArea > div > div > textarea:focus {
-        border-color: #b85d3a !important;
-        box-shadow: 0 0 0 4px rgba(184,93,58,0.25) !important;
+    .custom-nav .nav-links a:hover {
+        color: var(--primary);
+    }
+    .custom-nav .nav-links .active {
+        color: var(--primary);
+        font-weight: 600;
+    }
+    .custom-nav .theme-toggle {
+        background: none;
+        border: none;
+        color: var(--text-color);
+        font-size: 1.2rem;
+        cursor: pointer;
+        padding: 0.2rem 0.5rem;
+        border-radius: 8px;
+        transition: background 0.2s;
+    }
+    .custom-nav .theme-toggle:hover {
+        background: var(--card-border);
     }
 
-    /* ---------- FIX: Placeholder text visibility ---------- */
-    .stTextInput input::placeholder,
-    .stTextArea textarea::placeholder {
-        color: var(--placeholder-color) !important;
-        opacity: 0.85 !important;
+    /* ===== Hero Section ===== */
+    .hero {
+        text-align: center;
+        padding: 4rem 2rem 3rem;
+        animation: fadeInUp 0.8s ease;
+    }
+    .hero h1 {
+        font-size: 3.2rem;
+        font-weight: 900;
+        line-height: 1.1;
+        color: var(--text-color);
+        margin-bottom: 1rem;
+    }
+    .hero h1 span {
+        background: linear-gradient(135deg, var(--primary), var(--primary-light));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    .hero p {
+        font-size: 1.2rem;
+        color: var(--text-light);
+        max-width: 700px;
+        margin: 0 auto 2rem;
+    }
+    .hero .buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    .hero .buttons .btn-primary {
+        background: var(--btn-bg);
+        color: var(--btn-text);
+        padding: 0.8rem 2rem;
+        border-radius: 12px;
+        font-weight: 600;
+        border: none;
+        box-shadow: 0 10px 25px var(--shadow-color);
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-block;
+    }
+    .hero .buttons .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 18px 35px var(--shadow-color);
+    }
+    .hero .buttons .btn-secondary {
+        background: transparent;
+        color: var(--text-color);
+        padding: 0.8rem 2rem;
+        border-radius: 12px;
+        font-weight: 600;
+        border: 1px solid var(--card-border);
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-block;
+    }
+    .hero .buttons .btn-secondary:hover {
+        background: var(--card-bg);
+        border-color: var(--primary);
     }
 
-    /* Labels */
-    .stTextInput label,
-    .stTextArea label,
-    .stSelectbox label {
-        color: var(--text-color) !important;
-        font-weight: 600 !important;
+    /* ===== Stats ===== */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 2rem;
+        margin: 3rem 0;
+        text-align: center;
+    }
+    .stats-grid .stat {
+        background: var(--card-bg);
+        backdrop-filter: blur(8px);
+        border-radius: 20px;
+        padding: 1.5rem 1rem;
+        border: 1px solid var(--card-border);
+    }
+    .stats-grid .stat .number {
+        font-size: 2.8rem;
+        font-weight: 800;
+        color: var(--primary);
+        display: block;
+    }
+    .stats-grid .stat .label {
+        color: var(--text-light);
+        font-weight: 500;
         font-size: 0.9rem;
     }
 
-    /* Tabs */
-    .stTabs [data-baseweb="tab-list"] {
-        gap: .7rem;
+    /* ===== Section Headers ===== */
+    .section-header {
+        text-align: center;
+        margin: 3rem 0 2rem;
     }
-    .stTabs [data-baseweb="tab"] {
-        border-radius: 14px;
-        background: var(--tab-bg);
-        padding: .6rem 1.3rem;
-        color: var(--text-color) !important;
-        font-weight: 600;
-        transition: .2s;
-    }
-    .stTabs [data-baseweb="tab"]:hover {
-        background: var(--tab-selected);
-        color: #fff !important;
-    }
-    .stTabs [data-baseweb="tab"][aria-selected="true"] {
-        background: var(--tab-selected) !important;
-        color: #fff !important;
-    }
-
-    /* Sidebar */
-    section[data-testid="stSidebar"] {
-        background: var(--sidebar-bg) !important;
-        border-right: 1px solid var(--sidebar-border);
-    }
-    section[data-testid="stSidebar"] * {
-        color: var(--text-color) !important;
-    }
-    section[data-testid="stSidebar"] .stRadio label {
-        color: var(--text-color) !important;
-        font-weight: 400;
-        padding: 0.4rem 0.8rem;
-        border-radius: 8px;
-        transition: .2s;
-    }
-    section[data-testid="stSidebar"] .stRadio label:hover {
-        background: rgba(184,93,58,0.2);
-    }
-    section[data-testid="stSidebar"] .stRadio label[data-selected="true"] {
-        background: rgba(184,93,58,0.25);
-        color: #8a4a2e !important;
-        font-weight: 500;
-    }
-    section[data-testid="stSidebar"] .stMetric {
-        background: rgba(255,245,235,0.5);
-        border-radius: 16px;
-        padding: 10px;
-        border: 1px solid var(--sidebar-border);
-    }
-    section[data-testid="stSidebar"] .stMetric label {
-        color: var(--text-color) !important;
-    }
-    section[data-testid="stSidebar"] .stMetric .stMetricValue {
-        color: var(--text-color) !important;
-        font-weight: 600;
-    }
-    section[data-testid="stSidebar"] .stCaption {
-        color: var(--text-light) !important;
-    }
-
-    /* Alerts */
-    .stAlert {
-        border-radius: 16px;
-        background: var(--alert-bg) !important;
-    }
-    .stAlert > div {
-        color: var(--text-color) !important;
-    }
-
-    /* Skill tags */
-    .skill-tag {
+    .section-header .badge {
         display: inline-block;
-        background: #edd9c8;
-        color: #2b1a10 !important;
-        padding: 0.2rem 0.8rem;
+        background: var(--card-border);
+        color: var(--primary);
+        padding: 0.2rem 1rem;
         border-radius: 30px;
-        font-size: 0.78rem;
-        font-weight: 500;
-        margin: 0.15rem;
-        transition: .2s;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
-    .skill-tag:hover {
-        background: #b85d3a;
-        color: #fff !important;
-        transform: scale(1.05);
+    .section-header h2 {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--text-color);
+        margin-top: 0.5rem;
+    }
+    .section-header p {
+        color: var(--text-light);
+        max-width: 600px;
+        margin: 0.5rem auto 0;
     }
 
-    /* Animations */
-    @keyframes fade {
-        from {
-            opacity: 0;
-            transform: translateY(15px);
-        }
-        to {
-            opacity: 1;
-            transform: none;
-        }
+    /* ===== Feature Cards ===== */
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        margin: 2rem 0;
+    }
+    .feature-card {
+        background: var(--card-bg);
+        backdrop-filter: blur(8px);
+        border-radius: 24px;
+        padding: 2rem 1.5rem;
+        border: 1px solid var(--card-border);
+        transition: all 0.3s;
+        text-align: center;
+    }
+    .feature-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px var(--shadow-color);
+        border-color: var(--primary);
+    }
+    .feature-card .icon {
+        font-size: 2.8rem;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+    .feature-card h3 {
+        color: var(--text-color);
+        font-weight: 700;
+        font-size: 1.3rem;
+    }
+    .feature-card p {
+        color: var(--text-light);
+        font-size: 0.95rem;
+        margin-top: 0.5rem;
+    }
+
+    /* ===== Testimonials ===== */
+    .testimonial-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 2rem;
+        margin: 2rem 0;
+    }
+    .testimonial {
+        background: var(--card-bg);
+        backdrop-filter: blur(8px);
+        border-radius: 20px;
+        padding: 1.8rem;
+        border: 1px solid var(--card-border);
+    }
+    .testimonial .stars {
+        color: var(--primary);
+        font-size: 1.1rem;
+        letter-spacing: 2px;
+        margin-bottom: 0.5rem;
+    }
+    .testimonial blockquote {
+        font-weight: 500;
+        color: var(--text-color);
+        font-size: 1rem;
+        line-height: 1.6;
+        margin: 0.5rem 0;
+    }
+    .testimonial .author {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        margin-top: 1rem;
+    }
+    .testimonial .author .avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: var(--primary);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1.1rem;
+    }
+    .testimonial .author .info {
+        font-weight: 600;
+        color: var(--text-color);
+    }
+    .testimonial .author .info small {
+        display: block;
+        font-weight: 400;
+        color: var(--text-light);
+        font-size: 0.8rem;
+    }
+
+    /* ===== FAQ Accordion ===== */
+    .faq-item {
+        background: var(--card-bg);
+        backdrop-filter: blur(8px);
+        border-radius: 16px;
+        margin-bottom: 1rem;
+        border: 1px solid var(--card-border);
+        overflow: hidden;
+    }
+    .faq-item .question {
+        padding: 1.2rem 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+        font-weight: 600;
+        color: var(--text-color);
+        transition: background 0.2s;
+    }
+    .faq-item .question:hover {
+        background: var(--card-border);
+    }
+    .faq-item .answer {
+        padding: 0 1.5rem 1.2rem;
+        color: var(--text-light);
+        line-height: 1.6;
+        display: none;
+    }
+    .faq-item.active .answer {
+        display: block;
+    }
+    .faq-item .question .icon {
+        font-size: 1.4rem;
+        transition: transform 0.3s;
+    }
+    .faq-item.active .question .icon {
+        transform: rotate(45deg);
+    }
+
+    /* ===== CTA Section ===== */
+    .cta-section {
+        background: var(--header-bg);
+        border-radius: 32px;
+        padding: 3rem 2rem;
+        text-align: center;
+        color: white;
+        margin: 3rem 0;
+        box-shadow: 0 20px 50px var(--shadow-color);
+    }
+    .cta-section h2 {
+        font-size: 2.5rem;
+        font-weight: 800;
+    }
+    .cta-section p {
+        opacity: 0.9;
+        max-width: 600px;
+        margin: 0.5rem auto 1.5rem;
+    }
+    .cta-section .btn-cta {
+        background: white;
+        color: var(--primary-dark);
+        padding: 0.8rem 2.5rem;
+        border-radius: 12px;
+        font-weight: 700;
+        border: none;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-block;
+    }
+    .cta-section .btn-cta:hover {
+        transform: scale(1.03);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+
+    /* ===== Footer ===== */
+    .footer {
+        border-top: 1px solid var(--card-border);
+        padding: 2rem 0;
+        margin-top: 3rem;
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        color: var(--text-light);
+        font-size: 0.9rem;
+    }
+    .footer .links a {
+        color: var(--text-light);
+        text-decoration: none;
+        margin-left: 1.5rem;
+        transition: color 0.2s;
+    }
+    .footer .links a:hover {
+        color: var(--primary);
+    }
+
+    /* ===== Document Pages (resume, cv, etc.) ===== */
+    .doc-page {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 1.5rem 1rem;
+    }
+    .doc-page .header {
+        margin-bottom: 2rem;
+    }
+    .doc-page .header h1 {
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: var(--text-color);
+    }
+    .doc-page .header p {
+        color: var(--text-light);
+        font-size: 1.1rem;
+    }
+    .doc-page .preview-box {
+        background: var(--card-bg);
+        border-radius: 16px;
+        padding: 1.5rem;
+        border: 1px solid var(--card-border);
+        min-height: 200px;
+        margin-top: 1rem;
+    }
+
+    /* ===== Animations ===== */
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .fade-in {
+        animation: fadeInUp 0.6s ease forwards;
     }
     .delay-1 { animation-delay: 0.1s; }
     .delay-2 { animation-delay: 0.2s; }
     .delay-3 { animation-delay: 0.3s; }
     .delay-4 { animation-delay: 0.4s; }
-    .delay-5 { animation-delay: 0.5s; }
+
+    /* ===== Responsive tweaks ===== */
+    @media (max-width: 768px) {
+        .hero h1 { font-size: 2.2rem; }
+        .custom-nav { padding: 0.5rem 1rem; }
+        .custom-nav .nav-links { gap: 0.8rem; }
+        .stats-grid { grid-template-columns: 1fr 1fr; }
+        .features-grid { grid-template-columns: 1fr; }
+    }
 </style>
+""", unsafe_allow_html=True)
+
+# ---- JavaScript for Dark/Light Toggle & FAQ Accordion ----
+st.markdown("""
+<script>
+    // Dark mode toggle
+    function toggleTheme() {
+        const html = document.documentElement;
+        const current = html.getAttribute('data-theme');
+        const newTheme = current === 'dark' ? 'light' : 'dark';
+        html.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+    }
+
+    // Apply saved theme
+    (function() {
+        const saved = localStorage.getItem('theme');
+        if (saved) {
+            document.documentElement.setAttribute('data-theme', saved);
+        } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+        }
+    })();
+
+    // FAQ toggle
+    document.addEventListener('click', function(e) {
+        const faqItem = e.target.closest('.faq-item .question');
+        if (faqItem) {
+            const parent = faqItem.closest('.faq-item');
+            parent.classList.toggle('active');
+        }
+    });
+</script>
 """, unsafe_allow_html=True)
 
 # ---- Session State ----
@@ -341,27 +571,62 @@ if "jobs" not in st.session_state:
     st.session_state.jobs = []
 if "user_data" not in st.session_state:
     st.session_state.user_data = {}
+if "page" not in st.session_state:
+    st.session_state.page = "Home"
 
-# ---- Sidebar Navigation ----
-with st.sidebar:
-    st.markdown("""
-    <div style="text-align:center; padding:1.2rem 0 0.8rem 0;">
-        <div style="font-size:2.8rem;">📄</div>
-        <div style="font-weight:700; font-size:1.5rem; color:#2b1a10; letter-spacing:-0.5px;">DocForge</div>
-        <div style="font-size:0.85rem; color:#5a3a28; margin-top:0.2rem;">Professional Documents</div>
-    </div>
-    """, unsafe_allow_html=True)
-    st.markdown("---")
-    page = st.radio(
-        "Navigate",
-        ["🏠 Home", "📝 Builder", "📄 Resume", "📋 CV", "✉️ Cover Letter", "📊 Proposal", "🏆 Experience", "🔍 Job Scraper"],
-        label_visibility="collapsed"
-    )
-    st.markdown("---")
-    col1, col2 = st.columns(2)
-    col1.metric("🛠️ Skills", len(st.session_state.skills))
-    col2.metric("💼 Jobs", len(st.session_state.jobs))
-    st.caption("⚡ Streamlit · ReportLab")
+# ---- Navigation ----
+pages = {
+    "🏠 Home": "Home",
+    "📝 Builder": "Builder",
+    "📄 Resume": "Resume",
+    "📋 CV": "CV",
+    "✉️ Cover Letter": "CoverLetter",
+    "📊 Proposal": "Proposal",
+    "🏆 Experience": "Experience",
+    "🔍 Job Scraper": "JobScraper"
+}
+
+# ---- Header / Nav (replaces sidebar) ----
+with st.container():
+    # We'll use columns to create a custom nav bar
+    col_logo, col_nav, col_theme = st.columns([1, 4, 1])
+    with col_logo:
+        st.markdown("""
+        <div class="custom-nav" style="background:transparent; border:none; padding:0;">
+            <span class="logo" style="font-size:1.8rem;">📄 DocForge</span>
+        </div>
+        """, unsafe_allow_html=True)
+    with col_nav:
+        # We'll use st.radio hidden inside to keep state, but display custom buttons
+        # Actually we'll use st.tabs or st.selectbox, but we want a horizontal nav.
+        # We can use st.radio with horizontal orientation and custom CSS to make it look like a nav.
+        # We'll use a selectbox for mobile friendliness, but we can also use columns.
+        # Let's use st.selectbox for simplicity and to avoid extra complexity.
+        # But the user wants a nav like the example. We'll use st.radio with horizontal.
+        # We'll define a function to render nav.
+        pass
+
+# ---- Sidebar alternative: use a selectbox in the main area ----
+# We'll actually use a custom navigation with st.radio in a container with horizontal layout.
+# But to keep the code simple and working, we'll use a st.selectbox for page selection.
+# However, the user wants a visual nav like AgentForge – we can do that with CSS-styled buttons.
+# Let's use st.columns to create clickable buttons that set session state.
+
+# We'll render the nav as a set of buttons in columns.
+# For simplicity, we'll use st.radio with horizontal option.
+
+# ---- Page Selection ----
+page = st.sidebar.radio(
+    "Navigate",
+    ["🏠 Home", "📝 Builder", "📄 Resume", "📋 CV", "✉️ Cover Letter", "📊 Proposal", "🏆 Experience", "🔍 Job Scraper"],
+    index=0,
+    label_visibility="collapsed"
+)
+# But we'll hide the sidebar and use a top nav. Since we can't easily hide sidebar without CSS, we'll keep sidebar minimal.
+# Actually we can style sidebar to look like a top nav, but it's easier to use a custom top nav using columns.
+# Let's implement a top nav using st.columns and st.button.
+
+# We'll create a function to render the top nav, and use st.session_state.page to track.
 
 # ---- Helper to get user data ----
 def get_user_data():
@@ -385,86 +650,132 @@ def get_user_data():
         "theme": "Classic Green",
     }
 
+# ---- Render top navigation ----
+nav_items = ["🏠 Home", "📝 Builder", "📄 Resume", "📋 CV", "✉️ Cover Letter", "📊 Proposal", "🏆 Experience", "🔍 Job Scraper"]
+cols = st.columns(len(nav_items))
+for i, item in enumerate(nav_items):
+    with cols[i]:
+        # Use a button to change page
+        if st.button(item, key=f"nav_{item}", use_container_width=True):
+            st.session_state.page = item.split(" ")[-1]  # extract page name without emoji
+            st.rerun()
+
+# ---- Display content based on page ----
+page = st.session_state.get("page", "Home")
+
 # ==================== PAGES ====================
 
 # ---- HOME ----
-if page == "🏠 Home":
+if page == "Home":
+    # Hero Section
     st.markdown("""
-    <div class="app-header">
-        <h1>✨ Create Professional Documents Instantly</h1>
-        <p>Build resumes, CVs, cover letters, proposals, and experience letters – all from one place.</p>
+    <div class="hero">
+        <h1>Create <span>Professional Documents</span><br>Instantly</h1>
+        <p>Build resumes, CVs, cover letters, proposals, and experience letters – all from one platform. No design skills needed.</p>
+        <div class="buttons">
+            <a href="#" class="btn-primary" onclick="document.querySelector('[data-testid=\\"stButton\\"] button').click()">Get Started Free</a>
+            <a href="#" class="btn-secondary">Learn More</a>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
-    col1, col2, col3, col4 = st.columns(4)
-    docs = [
-        ("📄", "Resume", "ATS-friendly", 1),
-        ("📋", "CV", "Comprehensive", 2),
-        ("✉️", "Cover Letter", "Personalized", 3),
-        ("📊", "Proposal", "Client-ready", 4),
-        ("🏆", "Experience", "Employment verification", 5),
-    ]
-    for i, (icon, title, desc, idx) in enumerate(docs[:4]):
-        col = [col1, col2, col3, col4][i]
-        with col:
-            st.markdown(f"""
-            <div class="doc-card delay-{idx}" style="--index:{idx}">
-                <span class="icon">{icon}</span>
-                <div class="title">{title}</div>
-                <div class="desc">{desc}</div>
-            </div>
-            """, unsafe_allow_html=True)
-    # fifth card
-    with st.container():
-        st.markdown(f"""
-        <div style="max-width:300px; margin:0 auto; padding-top:0.5rem;">
-            <div class="doc-card delay-5" style="--index:5">
-                <span class="icon">🏆</span>
-                <div class="title">Experience</div>
-                <div class="desc">Employment verification</div>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-
+    # Stats
     st.markdown("""
-    <div class="section-card">
-        <h3>🚀 How It Works</h3>
-        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap:1.5rem; margin-top:1.2rem;">
-            <div style="text-align:center;">
-                <div style="font-size:2.2rem;">1️⃣</div>
-                <div><strong>Enter Details</strong></div>
-                <div style="font-size:0.85rem; opacity:0.7;">Fill once</div>
-            </div>
-            <div style="text-align:center;">
-                <div style="font-size:2.2rem;">2️⃣</div>
-                <div><strong>Choose Document</strong></div>
-                <div style="font-size:0.85rem; opacity:0.7;">Select type</div>
-            </div>
-            <div style="text-align:center;">
-                <div style="font-size:2.2rem;">3️⃣</div>
-                <div><strong>Customize</strong></div>
-                <div style="font-size:0.85rem; opacity:0.7;">Add specifics</div>
-            </div>
-            <div style="text-align:center;">
-                <div style="font-size:2.2rem;">4️⃣</div>
-                <div><strong>Download PDF</strong></div>
-                <div style="font-size:0.85rem; opacity:0.7;">Instant professional PDF</div>
-            </div>
+    <div class="stats-grid">
+        <div class="stat"><span class="number">10K+</span><span class="label">Documents Created</span></div>
+        <div class="stat"><span class="number">98%</span><span class="label">User Satisfaction</span></div>
+        <div class="stat"><span class="number">50+</span><span class="label">Templates</span></div>
+        <div class="stat"><span class="number">4.9★</span><span class="label">Average Rating</span></div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Features
+    st.markdown("""
+    <div class="section-header">
+        <span class="badge">Features</span>
+        <h2>Everything You Need</h2>
+        <p>Complete toolkit for creating professional documents.</p>
+    </div>
+    <div class="features-grid">
+        <div class="feature-card"><span class="icon">📄</span><h3>Resume Builder</h3><p>ATS-friendly resumes with multiple themes.</p></div>
+        <div class="feature-card"><span class="icon">📋</span><h3>CV Generator</h3><p>Comprehensive curriculum vitae with publications.</p></div>
+        <div class="feature-card"><span class="icon">✉️</span><h3>Cover Letters</h3><p>Personalized letters for job applications.</p></div>
+        <div class="feature-card"><span class="icon">📊</span><h3>Proposals</h3><p>Professional project proposals for clients.</p></div>
+        <div class="feature-card"><span class="icon">🏆</span><h3>Experience Letters</h3><p>Employment verification letters.</p></div>
+        <div class="feature-card"><span class="icon">🔍</span><h3>Job Scraper</h3><p>Find jobs and match your skills.</p></div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Testimonials
+    st.markdown("""
+    <div class="section-header">
+        <span class="badge">Testimonials</span>
+        <h2>What Our Users Say</h2>
+    </div>
+    <div class="testimonial-grid">
+        <div class="testimonial">
+            <div class="stars">★★★★★</div>
+            <blockquote>"DocForge cut my resume building time from hours to minutes. The templates are stunning."</blockquote>
+            <div class="author"><div class="avatar">S</div><div class="info">Sarah Chen <small>Software Engineer</small></div></div>
         </div>
+        <div class="testimonial">
+            <div class="stars">★★★★★</div>
+            <blockquote>"The cover letter generator helped me land interviews at top companies. Highly recommended."</blockquote>
+            <div class="author"><div class="avatar">M</div><div class="info">Marcus Rivera <small>Product Manager</small></div></div>
+        </div>
+        <div class="testimonial">
+            <div class="stars">★★★★★</div>
+            <blockquote>"I use DocForge for all my client proposals. Professional and easy to customize."</blockquote>
+            <div class="author"><div class="avatar">L</div><div class="info">Lisa Park <small>Freelance Designer</small></div></div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # FAQ
+    st.markdown("""
+    <div class="section-header">
+        <span class="badge">FAQ</span>
+        <h2>Frequently Asked Questions</h2>
+    </div>
+    <div class="faq-item active">
+        <div class="question"><span>How do I start building a resume?</span><span class="icon">➕</span></div>
+        <div class="answer">Go to the Builder page, fill in your personal details, experience, education, and skills. Then navigate to the Resume page to generate your PDF.</div>
+    </div>
+    <div class="faq-item">
+        <div class="question"><span>Can I use my own templates?</span><span class="icon">➕</span></div>
+        <div class="answer">Currently, we offer three built‑in themes: Classic Green, Corporate Blue, and Creative Purple. You can choose one when generating your document.</div>
+    </div>
+    <div class="faq-item">
+        <div class="question"><span>Is my data saved?</span><span class="icon">➕</span></div>
+        <div class="answer">Your data is stored in your browser session. It will be cleared when you close the tab or refresh the page.</div>
+    </div>
+    <div class="faq-item">
+        <div class="question"><span>Can I download my documents in other formats?</span><span class="icon">➕</span></div>
+        <div class="answer">Currently, we support PDF export. More formats may be added in the future.</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # CTA
+    st.markdown("""
+    <div class="cta-section">
+        <h2>Ready to Build Your Document?</h2>
+        <p>Get started now – it's free and takes less than 5 minutes.</p>
+        <a href="#" class="btn-cta" onclick="document.querySelector('[data-testid=\\"stButton\\"] button').click()">Start Building</a>
     </div>
     """, unsafe_allow_html=True)
 
 # ---- BUILDER ----
-elif page == "📝 Builder":
+elif page == "Builder":
     st.markdown("""
-    <div class="app-header" style="padding:1.4rem 2rem;">
-        <h1 style="font-size:2rem;">📝 Document Builder</h1>
-        <p>Fill your information once. All documents will use this data.</p>
+    <div class="doc-page">
+        <div class="header">
+            <h1>📝 Document Builder</h1>
+            <p>Fill your information once. All documents will use this data.</p>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
     tabs = st.tabs(["👤 Personal", "💼 Experience", "🎓 Education", "🛠️ Skills", "📝 Extra"])
-
     with tabs[0]:
         col1, col2 = st.columns(2)
         with col1:
@@ -475,7 +786,6 @@ elif page == "📝 Builder":
             st.text_input("Professional Title", key="f_title", placeholder="Software Engineer")
             st.text_input("Location", key="f_loc", placeholder="San Francisco, CA")
             st.text_input("LinkedIn URL", key="f_linkedin", placeholder="linkedin.com/in/john")
-
     with tabs[1]:
         col1, col2 = st.columns(2)
         with col1:
@@ -484,7 +794,6 @@ elif page == "📝 Builder":
         with col2:
             st.text_input("Duration", key="f_duration", placeholder="Jan 2020 – Present")
         st.text_area("Job Description", key="f_exp_desc", placeholder="• Built REST APIs serving 10k users/day\n• Led team of 5 developers", height=120)
-
     with tabs[2]:
         col1, col2, col3 = st.columns(3)
         with col1:
@@ -493,7 +802,6 @@ elif page == "📝 Builder":
             st.text_input("Institution", key="f_inst", placeholder="Stanford University")
         with col3:
             st.text_input("Year", key="f_year", placeholder="2016 – 2020")
-
     with tabs[3]:
         col1, col2 = st.columns([3, 1])
         with col1:
@@ -515,7 +823,6 @@ elif page == "📝 Builder":
         else:
             st.info("No skills added yet.")
         st.text_area("Projects (one per line)", key="f_projects", placeholder="ResumeForge — AI resume builder\nTaskBot — Slack automation", height=100)
-
     with tabs[4]:
         st.text_area("Professional Summary", key="f_summary", placeholder="Experienced software engineer with 5+ years...", height=100)
 
@@ -523,11 +830,13 @@ elif page == "📝 Builder":
         st.success("✅ All information saved!")
 
 # ---- RESUME ----
-elif page == "📄 Resume":
+elif page == "Resume":
     st.markdown("""
-    <div class="app-header" style="padding:1.2rem 2rem;">
-        <h1 style="font-size:2rem;">📄 Resume Generator</h1>
-        <p>Create an ATS-optimized professional resume.</p>
+    <div class="doc-page">
+        <div class="header">
+            <h1>📄 Resume Generator</h1>
+            <p>Create an ATS-optimized professional resume.</p>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -556,11 +865,13 @@ elif page == "📄 Resume":
             st.error("Failed to generate PDF. Check logs.")
 
 # ---- CV ----
-elif page == "📋 CV":
+elif page == "CV":
     st.markdown("""
-    <div class="app-header" style="padding:1.2rem 2rem;">
-        <h1 style="font-size:2rem;">📋 CV Generator</h1>
-        <p>Create a comprehensive curriculum vitae.</p>
+    <div class="doc-page">
+        <div class="header">
+            <h1>📋 CV Generator</h1>
+            <p>Create a comprehensive curriculum vitae.</p>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -589,11 +900,13 @@ elif page == "📋 CV":
             st.error("Failed to generate PDF.")
 
 # ---- COVER LETTER ----
-elif page == "✉️ Cover Letter":
+elif page == "CoverLetter":
     st.markdown("""
-    <div class="app-header" style="padding:1.2rem 2rem;">
-        <h1 style="font-size:2rem;">✉️ Cover Letter Generator</h1>
-        <p>Personalized cover letters for job applications.</p>
+    <div class="doc-page">
+        <div class="header">
+            <h1>✉️ Cover Letter Generator</h1>
+            <p>Personalized cover letters for job applications.</p>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -631,11 +944,13 @@ elif page == "✉️ Cover Letter":
             st.error("Failed to generate PDF.")
 
 # ---- PROPOSAL ----
-elif page == "📊 Proposal":
+elif page == "Proposal":
     st.markdown("""
-    <div class="app-header" style="padding:1.2rem 2rem;">
-        <h1 style="font-size:2rem;">📊 Proposal Generator</h1>
-        <p>Professional project proposals for clients.</p>
+    <div class="doc-page">
+        <div class="header">
+            <h1>📊 Proposal Generator</h1>
+            <p>Professional project proposals for clients.</p>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -677,11 +992,13 @@ elif page == "📊 Proposal":
             st.error("Failed to generate PDF.")
 
 # ---- EXPERIENCE LETTER ----
-elif page == "🏆 Experience":
+elif page == "Experience":
     st.markdown("""
-    <div class="app-header" style="padding:1.2rem 2rem;">
-        <h1 style="font-size:2rem;">🏆 Experience Letter Generator</h1>
-        <p>Employment verification letters.</p>
+    <div class="doc-page">
+        <div class="header">
+            <h1>🏆 Experience Letter Generator</h1>
+            <p>Employment verification letters.</p>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -726,11 +1043,13 @@ elif page == "🏆 Experience":
             st.error("Failed to generate PDF.")
 
 # ---- JOB SCRAPER ----
-elif page == "🔍 Job Scraper":
+elif page == "JobScraper":
     st.markdown("""
-    <div class="app-header" style="padding:1.2rem 2rem;">
-        <h1 style="font-size:2rem;">🔍 Job Scraper</h1>
-        <p>Find jobs and match your skills.</p>
+    <div class="doc-page">
+        <div class="header">
+            <h1>🔍 Job Scraper</h1>
+            <p>Find jobs and match your skills.</p>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -764,3 +1083,15 @@ elif page == "🔍 Job Scraper":
                 st.markdown("---")
     else:
         st.info("No jobs found. Click 'Scrape Jobs' to search.")
+
+# ---- Footer (shown on all pages) ----
+st.markdown("""
+<div class="footer">
+    <span>© 2026 DocForge. All rights reserved.</span>
+    <div class="links">
+        <a href="#">Privacy</a>
+        <a href="#">Terms</a>
+        <a href="#">Contact</a>
+    </div>
+</div>
+""", unsafe_allow_html=True)
