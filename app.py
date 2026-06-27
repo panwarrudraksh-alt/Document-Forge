@@ -17,198 +17,214 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ---- Custom CSS ----
+# ---- Custom CSS (New Modern UI) ----
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
     * {
         font-family: 'Inter', sans-serif;
         box-sizing: border-box;
     }
 
-    .main {
-        background: #f4f6fb;
+    .stApp {
+        background:
+            radial-gradient(circle at top left, rgba(56,189,248,.15), transparent 35%),
+            linear-gradient(135deg,#f8fafc,#eef2ff);
         padding: 0;
     }
 
+    /* Main container */
     .block-container {
-        padding-top: 1.5rem;
-        padding-bottom: 2rem;
+        padding-top: 2rem;
+        padding-bottom: 3rem;
+        max-width: 1400px;
     }
 
-    /* ---- Header ---- */
+    /* Header */
     .app-header {
-        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-        padding: 2rem 2.8rem;
-        border-radius: 20px;
+        background:
+            linear-gradient(135deg,#0f172a,#1d4ed8);
+        padding: 2.4rem 3rem;
+        border-radius: 28px;
+        box-shadow: 0 25px 60px rgba(15,23,42,.25);
+        border: 1px solid rgba(255,255,255,.15);
         margin-bottom: 2rem;
-        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.25);
-        animation: fadeInDown 0.7s ease forwards;
-        border-bottom: 4px solid #38bdf8;
+        animation: fade .5s ease;
     }
     .app-header h1 {
-        font-weight: 700;
+        color: white;
         font-size: 2.8rem;
+        font-weight: 800;
+        letter-spacing: -1px;
         margin: 0;
-        letter-spacing: -0.5px;
-        color: #f8fafc; /* white */
     }
     .app-header p {
-        margin: 0.3rem 0 0;
-        opacity: 0.85;
+        color: #dbeafe;
         font-size: 1.1rem;
-        color: #cbd5e1; /* light gray */
+        margin: 0.3rem 0 0;
     }
 
-    /* ---- Cards ---- */
+    /* Cards */
+    .doc-card,
+    .section-card {
+        background: rgba(255,255,255,.85);
+        backdrop-filter: blur(12px);
+        border-radius: 24px;
+        border: 1px solid rgba(148,163,184,.2);
+        box-shadow: 0 15px 35px rgba(15,23,42,.08);
+        transition: .3s ease;
+        animation: fade .5s ease;
+    }
     .doc-card {
-        background: white;
-        border-radius: 16px;
         padding: 2rem 1.2rem;
         text-align: center;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
-        border: 1px solid rgba(0, 0, 0, 0.04);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        cursor: default;
         height: 100%;
-        animation: fadeInUp 0.6s ease forwards;
-        animation-delay: calc(var(--index, 0) * 0.1s);
+        cursor: default;
     }
     .doc-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 20px 40px rgba(15, 23, 42, 0.12);
+        transform: translateY(-10px);
+        box-shadow: 0 25px 50px rgba(37,99,235,.18);
         border-color: #38bdf8;
     }
     .doc-card .icon {
-        font-size: 3rem;
-        margin-bottom: 0.5rem;
+        font-size: 3.2rem;
         display: block;
+        margin-bottom: 0.5rem;
     }
     .doc-card .title {
-        font-weight: 600;
-        font-size: 1.15rem;
-        color: #0f172a; /* dark */
+        color: #0f172a;
+        font-size: 1.2rem;
+        font-weight: 700;
         margin: 0.3rem 0;
     }
     .doc-card .desc {
+        color: #64748b;
         font-size: 0.85rem;
-        color: #64748b; /* gray */
-        margin-top: 0.2rem;
     }
 
-    /* ---- Buttons ---- */
-    .stButton > button {
-        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-        color: white !important;
-        border: none;
-        border-radius: 12px;
-        font-weight: 500;
-        padding: 0.6rem 1.5rem;
-        transition: all 0.25s ease;
+    /* Section card (used in Home) */
+    .section-card {
+        padding: 1.5rem;
+        margin-top: 2rem;
+    }
+    .section-card h3 {
+        color: #0f172a;
+        font-weight: 700;
+        margin-top: 0;
+    }
+
+    /* Buttons */
+    .stButton button,
+    .stDownloadButton button {
         width: 100%;
-        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
-    }
-    .stButton > button:hover {
-        transform: scale(1.02);
-        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.25);
-        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        border: none !important;
+        border-radius: 14px !important;
+        padding: .75rem 1.2rem !important;
+        font-weight: 700 !important;
         color: white !important;
+        background: linear-gradient(135deg,#2563eb,#06b6d4) !important;
+        box-shadow: 0 10px 25px rgba(37,99,235,.25);
+        transition: .25s ease;
+    }
+    .stButton button:hover,
+    .stDownloadButton button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 18px 35px rgba(37,99,235,.35);
     }
 
-    /* ---- Sidebar ---- */
-    .css-1d391kg {
-        background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
-        border-right: 1px solid #334155;
+    /* Inputs & TextAreas */
+    .stTextInput > div > div > input,
+    .stTextArea > div > div > textarea,
+    .stSelectbox > div > div {
+        border-radius: 14px !important;
+        border: 2px solid #e2e8f0 !important;
+        background: white !important;
+        color: #0f172a !important;
+        padding: 0.6rem 1rem !important;
+        font-size: 0.95rem;
+        transition: border-color .3s, box-shadow .3s;
     }
-    .css-1d391kg .stRadio label {
-        color: #cbd5e1 !important; /* light gray */
-        font-weight: 400;
-        padding: 0.4rem 0.8rem;
-        border-radius: 8px;
-        transition: all 0.2s;
-        background: transparent;
+    .stTextInput > div > div > input:focus,
+    .stTextArea > div > div > textarea:focus {
+        border-color: #2563eb !important;
+        box-shadow: 0 0 0 4px rgba(37,99,235,.12) !important;
     }
-    .css-1d391kg .stRadio label:hover {
-        background: rgba(56, 189, 248, 0.1);
-        color: white !important;
-    }
-    .css-1d391kg .stRadio label[data-selected="true"] {
-        background: rgba(56, 189, 248, 0.15);
-        color: #38bdf8 !important;
-        font-weight: 500;
-    }
-    .css-1d391kg .stMetric {
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 10px;
-        padding: 0.6rem;
-        backdrop-filter: blur(4px);
-        border: 1px solid #334155;
-    }
-    .css-1d391kg .stMetric label {
-        color: #94a3b8 !important;
-    }
-    .css-1d391kg .stMetric .stMetricValue {
-        color: #f8fafc !important;
-        font-weight: 600;
-    }
-    /* Sidebar caption */
-    .css-1d391kg .stCaption {
-        color: #64748b !important;
+    .stTextInput label,
+    .stTextArea label,
+    .stSelectbox label {
+        color: #334155 !important;
+        font-weight: 600 !important;
+        font-size: 0.9rem;
     }
 
-    /* ---- Tabs ---- */
+    /* Tabs */
     .stTabs [data-baseweb="tab-list"] {
-        gap: 0.5rem;
+        gap: .7rem;
     }
     .stTabs [data-baseweb="tab"] {
-        border-radius: 10px;
-        padding: 0.5rem 1.2rem;
-        font-weight: 500;
+        border-radius: 14px;
         background: #e2e8f0;
-        transition: all 0.2s;
-        color: #1e293b;
+        padding: .6rem 1.3rem;
+        color: #334155;
+        font-weight: 600;
+        transition: .2s;
     }
     .stTabs [data-baseweb="tab"]:hover {
         background: #cbd5e1;
     }
     .stTabs [data-baseweb="tab"][aria-selected="true"] {
-        background: #0f172a;
-        color: white;
+        background: #2563eb !important;
+        color: white !important;
     }
 
-    /* ---- Inputs & TextArea ---- */
-    .stTextInput > div > div > input,
-    .stTextArea > div > div > textarea,
-    .stSelectbox > div > div {
-        border-radius: 10px !important;
-        border: 2px solid #e2e8f0 !important;
-        background: white !important;
-        color: #0f172a !important;
-        transition: border-color 0.3s, box-shadow 0.3s;
-        padding: 0.6rem 1rem !important;
-        font-size: 0.95rem;
+    /* Sidebar */
+    section[data-testid="stSidebar"] {
+        background: linear-gradient(180deg,#020617,#172554);
+        border-right: 1px solid rgba(255,255,255,.08);
     }
-    .stTextInput > div > div > input:focus,
-    .stTextArea > div > div > textarea:focus {
-        border-color: #38bdf8 !important;
-        box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.15);
+    section[data-testid="stSidebar"] * {
+        color: #e2e8f0 !important;
     }
-    .stTextInput > div > div > input::placeholder,
-    .stTextArea > div > div > textarea::placeholder {
-        color: #94a3b8;
+    section[data-testid="stSidebar"] .stRadio label {
+        color: #cbd5e1 !important;
+        font-weight: 400;
+        padding: 0.4rem 0.8rem;
+        border-radius: 8px;
+        transition: .2s;
     }
-
-    /* ---- Labels ---- */
-    .stTextInput label,
-    .stTextArea label,
-    .stSelectbox label {
-        color: #0f172a !important;
+    section[data-testid="stSidebar"] .stRadio label:hover {
+        background: rgba(56,189,248,.1);
+        color: white !important;
+    }
+    section[data-testid="stSidebar"] .stRadio label[data-selected="true"] {
+        background: rgba(56,189,248,.15);
+        color: #38bdf8 !important;
         font-weight: 500;
-        font-size: 0.9rem;
+    }
+    section[data-testid="stSidebar"] .stMetric {
+        background: rgba(255,255,255,.08);
+        border-radius: 16px;
+        padding: 10px;
+        border: 1px solid rgba(255,255,255,.1);
+    }
+    section[data-testid="stSidebar"] .stMetric label {
+        color: #94a3b8 !important;
+    }
+    section[data-testid="stSidebar"] .stMetric .stMetricValue {
+        color: #f8fafc !important;
+        font-weight: 600;
+    }
+    section[data-testid="stSidebar"] .stCaption {
+        color: #64748b !important;
     }
 
-    /* ---- Skill Tags ---- */
+    /* Alerts */
+    .stAlert {
+        border-radius: 16px;
+    }
+
+    /* Skill tags */
     .skill-tag {
         display: inline-block;
         background: #e2e8f0;
@@ -218,58 +234,32 @@ st.markdown("""
         font-size: 0.78rem;
         font-weight: 500;
         margin: 0.15rem;
-        transition: all 0.2s;
+        transition: .2s;
     }
     .skill-tag:hover {
-        background: #0f172a;
+        background: #2563eb;
         color: white;
         transform: scale(1.05);
     }
 
-    /* ---- Info messages ---- */
-    .stAlert {
-        border-radius: 10px;
-    }
-    .stAlert > div {
-        color: #0f172a;
-    }
-
-    /* ---- Animations ---- */
-    @keyframes fadeInUp {
+    /* Animations */
+    @keyframes fade {
         from {
             opacity: 0;
-            transform: translateY(25px);
+            transform: translateY(15px);
         }
         to {
             opacity: 1;
-            transform: translateY(0);
-        }
-    }
-    @keyframes fadeInDown {
-        from {
-            opacity: 0;
-            transform: translateY(-20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
+            transform: none;
         }
     }
 
+    /* Optional delay classes (keep for staggered animations) */
     .delay-1 { animation-delay: 0.1s; }
     .delay-2 { animation-delay: 0.2s; }
     .delay-3 { animation-delay: 0.3s; }
     .delay-4 { animation-delay: 0.4s; }
     .delay-5 { animation-delay: 0.5s; }
-
-    .section-card {
-        background: white;
-        border-radius: 16px;
-        padding: 1.5rem;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.04);
-        border: 1px solid #e2e8f0;
-        margin-bottom: 1.5rem;
-    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -366,8 +356,8 @@ if page == "🏠 Home":
         """, unsafe_allow_html=True)
 
     st.markdown("""
-    <div class="section-card" style="margin-top:2.5rem;">
-        <h3 style="color:#0f172a; font-weight:600;">🚀 How It Works</h3>
+    <div class="section-card">
+        <h3>🚀 How It Works</h3>
         <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap:1.5rem; margin-top:1.2rem;">
             <div style="text-align:center;">
                 <div style="font-size:2.2rem;">1️⃣</div>
