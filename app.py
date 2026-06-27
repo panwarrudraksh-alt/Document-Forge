@@ -17,7 +17,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ---- Custom CSS (Rustic Radiance – Darker Backgrounds) ----
+# ---- Custom CSS (Rustic Radiance – Darker Backgrounds + Visible Placeholders) ----
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
@@ -38,10 +38,10 @@ st.markdown("""
         cursor: text !important;
     }
 
-    /* ---------- Rustic Radiance – Darker Backgrounds ---------- */
+    /* ---------- Theme variables (Rustic Radiance, darker) ---------- */
     :root {
-        --bg-start: #f0d5c0;      /* slightly darker cream */
-        --bg-end: #e8c4aa;        /* warmer, deeper beige */
+        --bg-start: #f0d5c0;
+        --bg-end: #e8c4aa;
         --text-color: #2b1a10;
         --text-light: #5a3a28;
         --card-bg: rgba(255,245,235,0.88);
@@ -59,16 +59,17 @@ st.markdown("""
         --btn-text: #2b1a10;
         --alert-bg: #edd9c8;
         --shadow-color: rgba(107,58,36,0.3);
+        --placeholder-color: #7a6a5a;  /* visible brown-gray */
     }
 
     [data-theme="dark"] {
         --bg-start: #2b1a10;
-        --bg-end: #3d2a1c;       /* same dark, but we'll darken slightly */
+        --bg-end: #3d2a1c;
         --text-color: #faf0e6;
         --text-light: #d4b096;
         --card-bg: rgba(50,35,25,0.88);
         --card-border: rgba(184,93,58,0.35);
-        --sidebar-bg: #1f130c;    /* darker */
+        --sidebar-bg: #1f130c;
         --sidebar-border: #5a3a28;
         --input-bg: #3d2a1c;
         --input-border: #5a3a28;
@@ -81,6 +82,7 @@ st.markdown("""
         --btn-text: #2b1a10;
         --alert-bg: #2b1a10;
         --shadow-color: rgba(0,0,0,0.5);
+        --placeholder-color: #b0a090;  /* lighter for dark background */
     }
 
     .stApp {
@@ -208,6 +210,15 @@ st.markdown("""
         border-color: #b85d3a !important;
         box-shadow: 0 0 0 4px rgba(184,93,58,0.25) !important;
     }
+
+    /* ---------- FIX: Placeholder text visibility ---------- */
+    .stTextInput input::placeholder,
+    .stTextArea textarea::placeholder {
+        color: var(--placeholder-color) !important;
+        opacity: 0.85 !important;
+    }
+
+    /* Labels */
     .stTextInput label,
     .stTextArea label,
     .stSelectbox label {
