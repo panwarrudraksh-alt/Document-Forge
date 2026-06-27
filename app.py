@@ -17,7 +17,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ---- Custom CSS (New Modern UI) ----
+# ---- Custom CSS (Fixed Contrast) ----
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
@@ -30,7 +30,7 @@ st.markdown("""
     .stApp {
         background:
             radial-gradient(circle at top left, rgba(56,189,248,.15), transparent 35%),
-            linear-gradient(137deg,#f8fafc,#eef2ff);
+            linear-gradient(135deg,#f8fafc,#eef2ff);
         padding: 0;
     }
 
@@ -53,14 +53,14 @@ st.markdown("""
         animation: fade .5s ease;
     }
     .app-header h1 {
-        color: white;
+        color: white !important;
         font-size: 2.8rem;
         font-weight: 800;
         letter-spacing: -1px;
         margin: 0;
     }
     .app-header p {
-        color: #dbeafe;
+        color: #dbeafe !important;
         font-size: 1.1rem;
         margin: 0.3rem 0 0;
     }
@@ -93,25 +93,27 @@ st.markdown("""
         margin-bottom: 0.5rem;
     }
     .doc-card .title {
-        color: #0f172a;
+        color: #0f172a !important;
         font-size: 1.2rem;
         font-weight: 700;
         margin: 0.3rem 0;
     }
     .doc-card .desc {
-        color: #64748b;
+        color: #475569 !important;
         font-size: 0.85rem;
     }
 
-    /* Section card (used in Home) */
     .section-card {
         padding: 1.5rem;
         margin-top: 2rem;
     }
     .section-card h3 {
-        color: #0f172a;
+        color: #0f172a !important;
         font-weight: 700;
         margin-top: 0;
+    }
+    .section-card div {
+        color: #0f172a !important;
     }
 
     /* Buttons */
@@ -150,10 +152,11 @@ st.markdown("""
         border-color: #2563eb !important;
         box-shadow: 0 0 0 4px rgba(37,99,235,.12) !important;
     }
+    /* Labels */
     .stTextInput label,
     .stTextArea label,
     .stSelectbox label {
-        color: #334155 !important;
+        color: #1e293b !important;
         font-weight: 600 !important;
         font-size: 0.9rem;
     }
@@ -178,13 +181,13 @@ st.markdown("""
         color: white !important;
     }
 
-    /* Sidebar */
+    /* Sidebar – force high contrast */
     section[data-testid="stSidebar"] {
-        background: linear-gradient(180deg,#020617,#172554);
+        background: linear-gradient(180deg,#020617,#172554) !important;
         border-right: 1px solid rgba(255,255,255,.08);
     }
     section[data-testid="stSidebar"] * {
-        color: #e2e8f0 !important;
+        color: #f1f5f9 !important;  /* bright light gray */
     }
     section[data-testid="stSidebar"] .stRadio label {
         color: #cbd5e1 !important;
@@ -212,16 +215,19 @@ st.markdown("""
         color: #94a3b8 !important;
     }
     section[data-testid="stSidebar"] .stMetric .stMetricValue {
-        color: #f8fafc !important;
+        color: white !important;
         font-weight: 600;
     }
     section[data-testid="stSidebar"] .stCaption {
-        color: #64748b !important;
+        color: #94a3b8 !important;
     }
 
     /* Alerts */
     .stAlert {
         border-radius: 16px;
+    }
+    .stAlert > div {
+        color: #0f172a !important;
     }
 
     /* Skill tags */
@@ -253,8 +259,6 @@ st.markdown("""
             transform: none;
         }
     }
-
-    /* Optional delay classes (keep for staggered animations) */
     .delay-1 { animation-delay: 0.1s; }
     .delay-2 { animation-delay: 0.2s; }
     .delay-3 { animation-delay: 0.3s; }
