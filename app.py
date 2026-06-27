@@ -20,133 +20,217 @@ st.set_page_config(
 # ---- Custom CSS ----
 st.markdown("""
 <style>
-    /* Global styles */
-    .main {
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+    * {
+        font-family: 'Outfit', sans-serif;
+        box-sizing: border-box;
     }
+
+    .main {
+        background: linear-gradient(135deg, #f5f7fa 0%, #e9edf2 100%);
+        padding: 0;
+    }
+
     .block-container {
-        padding-top: 2rem;
+        padding-top: 1.5rem;
         padding-bottom: 2rem;
     }
-    /* Header */
+
+    /* ---- Header ---- */
     .app-header {
-        background: linear-gradient(90deg, #1e3c72 0%, #2a5298 100%);
-        padding: 1.8rem 2.5rem;
-        border-radius: 16px;
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        padding: 2rem 2.8rem;
+        border-radius: 18px;
         margin-bottom: 2rem;
-        color: white;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        box-shadow: 0 12px 30px rgba(30, 60, 114, 0.3);
+        animation: fadeInDown 0.8s ease forwards;
     }
     .app-header h1 {
         font-weight: 700;
-        font-size: 2.5rem;
+        font-size: 2.8rem;
         margin: 0;
         letter-spacing: -0.5px;
+        color: white;
     }
     .app-header p {
         margin: 0.3rem 0 0;
-        opacity: 0.85;
-        font-size: 1.05rem;
+        opacity: 0.9;
+        font-size: 1.1rem;
+        color: #dce3f0;
     }
-    /* Cards */
+
+    /* ---- Cards ---- */
     .doc-card {
         background: white;
-        border-radius: 14px;
-        padding: 1.8rem 1.2rem;
+        border-radius: 16px;
+        padding: 2rem 1.2rem;
         text-align: center;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        transition: all 0.25s ease;
-        border: 1px solid #e9ecef;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
+        border: 1px solid rgba(0, 0, 0, 0.04);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: default;
         height: 100%;
-        cursor: pointer;
+        animation: fadeInUp 0.6s ease forwards;
+        animation-delay: calc(var(--index, 0) * 0.1s);
     }
     .doc-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 12px 28px rgba(0,0,0,0.1);
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(30, 60, 114, 0.12);
         border-color: #2a5298;
     }
     .doc-card .icon {
-        font-size: 2.8rem;
+        font-size: 3rem;
         margin-bottom: 0.5rem;
+        display: block;
     }
     .doc-card .title {
         font-weight: 600;
-        font-size: 1.1rem;
+        font-size: 1.15rem;
         color: #1e3c72;
+        margin: 0.3rem 0;
     }
     .doc-card .desc {
         font-size: 0.85rem;
         color: #6c757d;
-        margin-top: 0.3rem;
+        margin-top: 0.2rem;
     }
-    /* Buttons */
-    .stButton button {
-        background: linear-gradient(90deg, #1e3c72 0%, #2a5298 100%);
+
+    /* ---- Buttons ---- */
+    .stButton > button {
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
         color: white;
         border: none;
-        border-radius: 8px;
+        border-radius: 10px;
         font-weight: 500;
-        padding: 0.5rem 1.2rem;
-        transition: all 0.2s;
+        padding: 0.6rem 1.5rem;
+        transition: all 0.25s ease;
         width: 100%;
+        box-shadow: 0 4px 12px rgba(42, 82, 152, 0.2);
     }
-    .stButton button:hover {
+    .stButton > button:hover {
         transform: scale(1.02);
-        box-shadow: 0 4px 14px rgba(42, 82, 152, 0.4);
+        box-shadow: 0 8px 24px rgba(42, 82, 152, 0.35);
     }
-    /* Sidebar */
+
+    /* ---- Sidebar ---- */
     .css-1d391kg {
-        background: #1e3c72;
+        background: linear-gradient(180deg, #1a2a4a 0%, #0f1a30 100%);
     }
     .css-1d391kg .stRadio label {
+        color: #dce3f0;
+        font-weight: 400;
+    }
+    .css-1d391kg .stRadio label:hover {
         color: white;
     }
     .css-1d391kg .stMetric {
-        background: rgba(255,255,255,0.08);
-        border-radius: 8px;
-        padding: 0.5rem;
+        background: rgba(255, 255, 255, 0.06);
+        border-radius: 10px;
+        padding: 0.6rem;
+        backdrop-filter: blur(4px);
     }
-    /* Inputs */
-    .stTextInput, .stTextArea, .stSelectbox {
-        border-radius: 8px;
+    .css-1d391kg .stMetric label {
+        color: #b0c4de !important;
     }
-    /* Tabs */
+    .css-1d391kg .stMetric .stMetricValue {
+        color: white !important;
+        font-weight: 600;
+    }
+
+    /* ---- Tabs ---- */
     .stTabs [data-baseweb="tab-list"] {
         gap: 0.5rem;
     }
     .stTabs [data-baseweb="tab"] {
-        border-radius: 8px;
-        padding: 0.4rem 1rem;
+        border-radius: 10px;
+        padding: 0.5rem 1.2rem;
         font-weight: 500;
         background: #f1f3f5;
+        transition: all 0.2s;
+    }
+    .stTabs [data-baseweb="tab"]:hover {
+        background: #e2e6ea;
     }
     .stTabs [data-baseweb="tab"][aria-selected="true"] {
-        background: #2a5298;
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
         color: white;
     }
-    /* Preview box */
+
+    /* ---- Inputs ---- */
+    .stTextInput > div > div > input,
+    .stTextArea > div > div > textarea,
+    .stSelectbox > div > div {
+        border-radius: 10px !important;
+        border: 1.5px solid #dde1e6 !important;
+        transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    .stTextInput > div > div > input:focus,
+    .stTextArea > div > div > textarea:focus {
+        border-color: #2a5298 !important;
+        box-shadow: 0 0 0 3px rgba(42, 82, 152, 0.1);
+    }
+
+    /* ---- Preview box ---- */
     .preview-box {
         background: white;
         border: 1px solid #dee2e6;
         border-radius: 12px;
         padding: 1.2rem;
-        min-height: 180px;
+        min-height: 160px;
         font-size: 0.9rem;
-        line-height: 1.6;
+        line-height: 1.7;
         white-space: pre-wrap;
         overflow-y: auto;
-        max-height: 400px;
+        max-height: 350px;
+        box-shadow: inset 0 2px 6px rgba(0,0,0,0.02);
     }
+
+    /* ---- Skill tags ---- */
     .skill-tag {
         display: inline-block;
         background: #e7f3ff;
         color: #1e3c72;
-        padding: 0.15rem 0.6rem;
-        border-radius: 20px;
-        font-size: 0.75rem;
+        padding: 0.2rem 0.8rem;
+        border-radius: 30px;
+        font-size: 0.78rem;
         font-weight: 500;
         margin: 0.15rem;
+        transition: all 0.2s;
     }
+    .skill-tag:hover {
+        background: #2a5298;
+        color: white;
+        transform: scale(1.05);
+    }
+
+    /* ---- Animations ---- */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(25px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* ---- Utility to set animation delay via style attribute ---- */
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    .delay-3 { animation-delay: 0.3s; }
+    .delay-4 { animation-delay: 0.4s; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -161,10 +245,10 @@ if "user_data" not in st.session_state:
 # ---- Sidebar Navigation ----
 with st.sidebar:
     st.markdown("""
-    <div style="text-align:center; padding:1rem 0;">
-        <div style="font-size:2.5rem;">📄</div>
-        <div style="font-weight:700; font-size:1.4rem; color:white;">DocForge</div>
-        <div style="color:#b0c4de; font-size:0.8rem;">Professional Documents</div>
+    <div style="text-align:center; padding:1.2rem 0 0.8rem 0;">
+        <div style="font-size:2.8rem;">📄</div>
+        <div style="font-weight:700; font-size:1.5rem; color:white; letter-spacing:-0.5px;">DocForge</div>
+        <div style="color:#b0c4de; font-size:0.85rem; margin-top:0.2rem;">Professional Documents</div>
     </div>
     """, unsafe_allow_html=True)
     st.markdown("---")
@@ -177,7 +261,7 @@ with st.sidebar:
     col1, col2 = st.columns(2)
     col1.metric("🛠️ Skills", len(st.session_state.skills))
     col2.metric("💼 Jobs", len(st.session_state.jobs))
-    st.caption("⚡ Built with Streamlit · ReportLab")
+    st.caption("⚡ Streamlit · ReportLab")
 
 # ---- Helper to get user data ----
 def get_user_data():
@@ -214,29 +298,28 @@ if page == "🏠 Home":
 
     col1, col2, col3, col4 = st.columns(4)
     docs = [
-        ("📄", "Resume", "ATS-friendly"),
-        ("📋", "CV", "Comprehensive"),
-        ("✉️", "Cover Letter", "Personalized"),
-        ("📊", "Proposal", "Client-ready"),
-        ("🏆", "Experience", "Employment verification"),
+        ("📄", "Resume", "ATS-friendly", 1),
+        ("📋", "CV", "Comprehensive", 2),
+        ("✉️", "Cover Letter", "Personalized", 3),
+        ("📊", "Proposal", "Client-ready", 4),
+        ("🏆", "Experience", "Employment verification", 5),
     ]
-    # Show first four in row, fifth on next row
-    for i, (icon, title, desc) in enumerate(docs[:4]):
+    for i, (icon, title, desc, idx) in enumerate(docs[:4]):
         col = [col1, col2, col3, col4][i]
         with col:
             st.markdown(f"""
-            <div class="doc-card">
-                <div class="icon">{icon}</div>
+            <div class="doc-card delay-{idx}" style="--index:{idx}">
+                <span class="icon">{icon}</span>
                 <div class="title">{title}</div>
                 <div class="desc">{desc}</div>
             </div>
             """, unsafe_allow_html=True)
-    # Fifth card
+    # fifth card
     with st.container():
         st.markdown(f"""
-        <div style="max-width:300px; margin:0 auto;">
-            <div class="doc-card">
-                <div class="icon">🏆</div>
+        <div style="max-width:300px; margin:0 auto; padding-top:0.5rem;">
+            <div class="doc-card delay-5" style="--index:5">
+                <span class="icon">🏆</span>
                 <div class="title">Experience</div>
                 <div class="desc">Employment verification</div>
             </div>
@@ -244,26 +327,26 @@ if page == "🏠 Home":
         """, unsafe_allow_html=True)
 
     st.markdown("""
-    <div style="background:white; border-radius:14px; padding:1.5rem; margin-top:2rem; box-shadow:0 4px 12px rgba(0,0,0,0.05);">
-        <h3 style="color:#1e3c72;">🚀 How It Works</h3>
-        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap:1.5rem; margin-top:1rem;">
+    <div style="background:white; border-radius:16px; padding:1.8rem; margin-top:2.5rem; box-shadow:0 8px 24px rgba(0,0,0,0.04);">
+        <h3 style="color:#1e3c72; font-weight:600;">🚀 How It Works</h3>
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap:1.5rem; margin-top:1.2rem;">
             <div style="text-align:center;">
-                <div style="font-size:2rem;">1️⃣</div>
+                <div style="font-size:2.2rem;">1️⃣</div>
                 <div><strong>Enter Details</strong></div>
                 <div style="color:#6c757d; font-size:0.85rem;">Fill once</div>
             </div>
             <div style="text-align:center;">
-                <div style="font-size:2rem;">2️⃣</div>
+                <div style="font-size:2.2rem;">2️⃣</div>
                 <div><strong>Choose Document</strong></div>
                 <div style="color:#6c757d; font-size:0.85rem;">Select type</div>
             </div>
             <div style="text-align:center;">
-                <div style="font-size:2rem;">3️⃣</div>
+                <div style="font-size:2.2rem;">3️⃣</div>
                 <div><strong>Customize</strong></div>
                 <div style="color:#6c757d; font-size:0.85rem;">Add specifics</div>
             </div>
             <div style="text-align:center;">
-                <div style="font-size:2rem;">4️⃣</div>
+                <div style="font-size:2.2rem;">4️⃣</div>
                 <div><strong>Download PDF</strong></div>
                 <div style="color:#6c757d; font-size:0.85rem;">Instant professional PDF</div>
             </div>
@@ -271,11 +354,11 @@ if page == "🏠 Home":
     </div>
     """, unsafe_allow_html=True)
 
-# ---- BUILDER (unified input) ----
+# ---- BUILDER ----
 elif page == "📝 Builder":
     st.markdown("""
-    <div class="app-header" style="padding:1.2rem 2rem;">
-        <h1 style="font-size:1.8rem;">📝 Document Builder</h1>
+    <div class="app-header" style="padding:1.4rem 2rem;">
+        <h1 style="font-size:2rem;">📝 Document Builder</h1>
         <p>Fill your information once. All documents will use this data.</p>
     </div>
     """, unsafe_allow_html=True)
@@ -342,8 +425,8 @@ elif page == "📝 Builder":
 # ---- RESUME ----
 elif page == "📄 Resume":
     st.markdown("""
-    <div class="app-header" style="padding:1.2rem 2rem; background: linear-gradient(90deg, #1e3c72 0%, #2a5298 100%);">
-        <h1 style="font-size:1.8rem;">📄 Resume Generator</h1>
+    <div class="app-header" style="padding:1.2rem 2rem;">
+        <h1 style="font-size:2rem;">📄 Resume Generator</h1>
         <p>Create an ATS-optimized professional resume.</p>
     </div>
     """, unsafe_allow_html=True)
@@ -375,8 +458,8 @@ elif page == "📄 Resume":
 # ---- CV ----
 elif page == "📋 CV":
     st.markdown("""
-    <div class="app-header" style="padding:1.2rem 2rem; background: linear-gradient(90deg, #1e3c72 0%, #2a5298 100%);">
-        <h1 style="font-size:1.8rem;">📋 CV Generator</h1>
+    <div class="app-header" style="padding:1.2rem 2rem;">
+        <h1 style="font-size:2rem;">📋 CV Generator</h1>
         <p>Create a comprehensive curriculum vitae.</p>
     </div>
     """, unsafe_allow_html=True)
@@ -408,8 +491,8 @@ elif page == "📋 CV":
 # ---- COVER LETTER ----
 elif page == "✉️ Cover Letter":
     st.markdown("""
-    <div class="app-header" style="padding:1.2rem 2rem; background: linear-gradient(90deg, #1e3c72 0%, #2a5298 100%);">
-        <h1 style="font-size:1.8rem;">✉️ Cover Letter Generator</h1>
+    <div class="app-header" style="padding:1.2rem 2rem;">
+        <h1 style="font-size:2rem;">✉️ Cover Letter Generator</h1>
         <p>Personalized cover letters for job applications.</p>
     </div>
     """, unsafe_allow_html=True)
@@ -450,8 +533,8 @@ elif page == "✉️ Cover Letter":
 # ---- PROPOSAL ----
 elif page == "📊 Proposal":
     st.markdown("""
-    <div class="app-header" style="padding:1.2rem 2rem; background: linear-gradient(90deg, #1e3c72 0%, #2a5298 100%);">
-        <h1 style="font-size:1.8rem;">📊 Proposal Generator</h1>
+    <div class="app-header" style="padding:1.2rem 2rem;">
+        <h1 style="font-size:2rem;">📊 Proposal Generator</h1>
         <p>Professional project proposals for clients.</p>
     </div>
     """, unsafe_allow_html=True)
@@ -496,8 +579,8 @@ elif page == "📊 Proposal":
 # ---- EXPERIENCE LETTER ----
 elif page == "🏆 Experience":
     st.markdown("""
-    <div class="app-header" style="padding:1.2rem 2rem; background: linear-gradient(90deg, #1e3c72 0%, #2a5298 100%);">
-        <h1 style="font-size:1.8rem;">🏆 Experience Letter Generator</h1>
+    <div class="app-header" style="padding:1.2rem 2rem;">
+        <h1 style="font-size:2rem;">🏆 Experience Letter Generator</h1>
         <p>Employment verification letters.</p>
     </div>
     """, unsafe_allow_html=True)
@@ -545,8 +628,8 @@ elif page == "🏆 Experience":
 # ---- JOB SCRAPER ----
 elif page == "🔍 Job Scraper":
     st.markdown("""
-    <div class="app-header" style="padding:1.2rem 2rem; background: linear-gradient(90deg, #1e3c72 0%, #2a5298 100%);">
-        <h1 style="font-size:1.8rem;">🔍 Job Scraper</h1>
+    <div class="app-header" style="padding:1.2rem 2rem;">
+        <h1 style="font-size:2rem;">🔍 Job Scraper</h1>
         <p>Find jobs and match your skills.</p>
     </div>
     """, unsafe_allow_html=True)
