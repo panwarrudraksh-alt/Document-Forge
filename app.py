@@ -17,7 +17,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ---- Custom CSS (Camel & Cream Theme) ----
+# ---- Custom CSS (Camel & Cream Theme + Custom Cursor) ----
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
@@ -27,18 +27,24 @@ st.markdown("""
         box-sizing: border-box;
     }
 
-    .stApp {
-        background:
-            radial-gradient(circle at top left, rgba(193,154,107,0.15), transparent 35%),
-            linear-gradient(135deg, var(--bg-start), var(--bg-end));
-        padding: 0;
+    /* ---------- Custom Cursor ---------- */
+    body, .stApp {
+        cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="12" fill="%23c19a6b" stroke="%233d2c1b" stroke-width="2"/><circle cx="16" cy="16" r="5" fill="%233d2c1b"/></svg>') 16 16, auto;
+    }
+    /* Interactive elements – same cursor but with a pointer tail */
+    a, button, .stButton button, .stDownloadButton button, .stRadio label, .doc-card {
+        cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="12" fill="%23c19a6b" stroke="%233d2c1b" stroke-width="2"/><circle cx="16" cy="16" r="5" fill="%233d2c1b"/><path d="M20 20 L28 28" stroke="%233d2c1b" stroke-width="2"/></svg>') 16 16, pointer;
+    }
+    /* Text inputs get the default I‑beam for better usability */
+    input, textarea, .stTextInput input, .stTextArea textarea {
+        cursor: text !important;
     }
 
-    /* Warm theme variables */
+    /* ---------- Theme variables ---------- */
     :root {
-        --bg-start: #fdf6ee;     /* cream */
-        --bg-end: #f5e6d3;       /* light beige */
-        --text-color: #3d2c1b;   /* dark brown */
+        --bg-start: #fdf6ee;
+        --bg-end: #f5e6d3;
+        --text-color: #3d2c1b;
         --text-light: #5a3f28;
         --card-bg: rgba(255,248,235,0.85);
         --card-border: rgba(193,154,107,0.3);
@@ -47,7 +53,7 @@ st.markdown("""
         --input-bg: #fffcf5;
         --input-border: #d4b896;
         --tab-bg: #ede0d0;
-        --tab-selected: #c19a6b; /* camel */
+        --tab-selected: #c19a6b;
         --header-bg: linear-gradient(135deg, #8b5a2b, #c19a6b);
         --header-text: #ffffff;
         --header-subtext: #f5e6d3;
@@ -57,7 +63,6 @@ st.markdown("""
         --shadow-color: rgba(139,90,43,0.25);
     }
 
-    /* Dark theme overrides – still warm but darker */
     [data-theme="dark"] {
         --bg-start: #2d1f12;
         --bg-end: #3d2c1b;
@@ -78,6 +83,13 @@ st.markdown("""
         --btn-text: #2d1a0a;
         --alert-bg: #3d2c1b;
         --shadow-color: rgba(0,0,0,0.3);
+    }
+
+    .stApp {
+        background:
+            radial-gradient(circle at top left, rgba(193,154,107,0.15), transparent 35%),
+            linear-gradient(135deg, var(--bg-start), var(--bg-end));
+        padding: 0;
     }
 
     .block-container {
@@ -276,7 +288,7 @@ st.markdown("""
         color: var(--text-color) !important;
     }
 
-    /* Skill tags – warm */
+    /* Skill tags */
     .skill-tag {
         display: inline-block;
         background: #ede0d0;
