@@ -52,13 +52,13 @@ st.markdown("""
         font-size: 2.8rem;
         margin: 0;
         letter-spacing: -0.5px;
-        color: #f8fafc;
+        color: #f8fafc; /* white */
     }
     .app-header p {
         margin: 0.3rem 0 0;
         opacity: 0.85;
         font-size: 1.1rem;
-        color: #cbd5e1;
+        color: #cbd5e1; /* light gray */
     }
 
     /* ---- Cards ---- */
@@ -88,19 +88,19 @@ st.markdown("""
     .doc-card .title {
         font-weight: 600;
         font-size: 1.15rem;
-        color: #0f172a;
+        color: #0f172a; /* dark */
         margin: 0.3rem 0;
     }
     .doc-card .desc {
         font-size: 0.85rem;
-        color: #64748b;
+        color: #64748b; /* gray */
         margin-top: 0.2rem;
     }
 
     /* ---- Buttons ---- */
     .stButton > button {
         background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-        color: white;
+        color: white !important;
         border: none;
         border-radius: 12px;
         font-weight: 500;
@@ -113,6 +113,7 @@ st.markdown("""
         transform: scale(1.02);
         box-shadow: 0 8px 24px rgba(15, 23, 42, 0.25);
         background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        color: white !important;
     }
 
     /* ---- Sidebar ---- */
@@ -121,19 +122,20 @@ st.markdown("""
         border-right: 1px solid #334155;
     }
     .css-1d391kg .stRadio label {
-        color: #cbd5e1;
+        color: #cbd5e1 !important; /* light gray */
         font-weight: 400;
         padding: 0.4rem 0.8rem;
         border-radius: 8px;
         transition: all 0.2s;
+        background: transparent;
     }
     .css-1d391kg .stRadio label:hover {
         background: rgba(56, 189, 248, 0.1);
-        color: white;
+        color: white !important;
     }
     .css-1d391kg .stRadio label[data-selected="true"] {
         background: rgba(56, 189, 248, 0.15);
-        color: #38bdf8;
+        color: #38bdf8 !important;
         font-weight: 500;
     }
     .css-1d391kg .stMetric {
@@ -149,6 +151,10 @@ st.markdown("""
     .css-1d391kg .stMetric .stMetricValue {
         color: #f8fafc !important;
         font-weight: 600;
+    }
+    /* Sidebar caption */
+    .css-1d391kg .stCaption {
+        color: #64748b !important;
     }
 
     /* ---- Tabs ---- */
@@ -181,6 +187,7 @@ st.markdown("""
         color: #0f172a !important;
         transition: border-color 0.3s, box-shadow 0.3s;
         padding: 0.6rem 1rem !important;
+        font-size: 0.95rem;
     }
     .stTextInput > div > div > input:focus,
     .stTextArea > div > div > textarea:focus {
@@ -219,6 +226,14 @@ st.markdown("""
         transform: scale(1.05);
     }
 
+    /* ---- Info messages ---- */
+    .stAlert {
+        border-radius: 10px;
+    }
+    .stAlert > div {
+        color: #0f172a;
+    }
+
     /* ---- Animations ---- */
     @keyframes fadeInUp {
         from {
@@ -241,14 +256,12 @@ st.markdown("""
         }
     }
 
-    /* ---- Utility ---- */
     .delay-1 { animation-delay: 0.1s; }
     .delay-2 { animation-delay: 0.2s; }
     .delay-3 { animation-delay: 0.3s; }
     .delay-4 { animation-delay: 0.4s; }
     .delay-5 { animation-delay: 0.5s; }
 
-    /* ---- Section Cards ---- */
     .section-card {
         background: white;
         border-radius: 16px;
@@ -256,16 +269,6 @@ st.markdown("""
         box-shadow: 0 4px 12px rgba(0,0,0,0.04);
         border: 1px solid #e2e8f0;
         margin-bottom: 1.5rem;
-    }
-
-    /* ---- Info boxes ---- */
-    .info-box {
-        background: #f1f5f9;
-        border-radius: 10px;
-        padding: 1rem 1.2rem;
-        color: #0f172a;
-        font-size: 0.9rem;
-        border-left: 4px solid #38bdf8;
     }
 </style>
 """, unsafe_allow_html=True)
