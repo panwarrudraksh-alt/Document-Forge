@@ -17,7 +17,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ---- Custom CSS (Camel & Cream Theme + Custom Cursor) ----
+# ---- Custom CSS (Rustic Radiance Theme + Custom Cursor) ----
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
@@ -29,65 +29,65 @@ st.markdown("""
 
     /* ---------- Custom Cursor ---------- */
     body, .stApp {
-        cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="12" fill="%23c19a6b" stroke="%233d2c1b" stroke-width="2"/><circle cx="16" cy="16" r="5" fill="%233d2c1b"/></svg>') 16 16, auto;
+        cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="12" fill="%23b85d3a" stroke="%232b1a10" stroke-width="2"/><circle cx="16" cy="16" r="5" fill="%232b1a10"/></svg>') 16 16, auto;
     }
-    /* Interactive elements – same cursor but with a pointer tail */
+    /* Interactive elements – same cursor with a pointer tail */
     a, button, .stButton button, .stDownloadButton button, .stRadio label, .doc-card {
-        cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="12" fill="%23c19a6b" stroke="%233d2c1b" stroke-width="2"/><circle cx="16" cy="16" r="5" fill="%233d2c1b"/><path d="M20 20 L28 28" stroke="%233d2c1b" stroke-width="2"/></svg>') 16 16, pointer;
+        cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="12" fill="%23b85d3a" stroke="%232b1a10" stroke-width="2"/><circle cx="16" cy="16" r="5" fill="%232b1a10"/><path d="M20 20 L28 28" stroke="%232b1a10" stroke-width="2"/></svg>') 16 16, pointer;
     }
-    /* Text inputs get the default I‑beam for better usability */
+    /* Text inputs get default I‑beam */
     input, textarea, .stTextInput input, .stTextArea textarea {
         cursor: text !important;
     }
 
-    /* ---------- Theme variables ---------- */
+    /* ---------- Rustic Radiance Theme variables ---------- */
     :root {
-        --bg-start: #fdf6ee;
-        --bg-end: #f5e6d3;
-        --text-color: #3d2c1b;
-        --text-light: #5a3f28;
-        --card-bg: rgba(255,248,235,0.85);
-        --card-border: rgba(193,154,107,0.3);
-        --sidebar-bg: #f5e6d3;
-        --sidebar-border: #d4b896;
-        --input-bg: #fffcf5;
-        --input-border: #d4b896;
-        --tab-bg: #ede0d0;
-        --tab-selected: #c19a6b;
-        --header-bg: linear-gradient(135deg, #8b5a2b, #c19a6b);
+        --bg-start: #faf0e6;
+        --bg-end: #f5e1d0;
+        --text-color: #2b1a10;
+        --text-light: #5a3a28;
+        --card-bg: rgba(255,245,235,0.85);
+        --card-border: rgba(184,93,58,0.3);
+        --sidebar-bg: #f5e1d0;
+        --sidebar-border: #d4b096;
+        --input-bg: #fffcf8;
+        --input-border: #d4b096;
+        --tab-bg: #f0ddd0;
+        --tab-selected: #b85d3a;
+        --header-bg: linear-gradient(135deg, #6b3a24, #b85d3a);
         --header-text: #ffffff;
-        --header-subtext: #f5e6d3;
-        --btn-bg: linear-gradient(135deg, #b88a5a, #d4a373);
-        --btn-text: #2d1a0a;
-        --alert-bg: #f5e6d3;
-        --shadow-color: rgba(139,90,43,0.25);
+        --header-subtext: #f5e1d0;
+        --btn-bg: linear-gradient(135deg, #c46a44, #d4845a);
+        --btn-text: #2b1a10;
+        --alert-bg: #f5e1d0;
+        --shadow-color: rgba(107,58,36,0.25);
     }
 
     [data-theme="dark"] {
-        --bg-start: #2d1f12;
-        --bg-end: #3d2c1b;
-        --text-color: #f5e6d3;
-        --text-light: #d4b896;
-        --card-bg: rgba(60,45,30,0.85);
-        --card-border: rgba(193,154,107,0.3);
-        --sidebar-bg: #2d1f12;
-        --sidebar-border: #5a3f28;
-        --input-bg: #3d2c1b;
-        --input-border: #5a3f28;
-        --tab-bg: #3d2c1b;
-        --tab-selected: #c19a6b;
-        --header-bg: linear-gradient(135deg, #5a3f28, #8b5a2b);
+        --bg-start: #2b1a10;
+        --bg-end: #3d2a1c;
+        --text-color: #faf0e6;
+        --text-light: #d4b096;
+        --card-bg: rgba(60,42,28,0.85);
+        --card-border: rgba(184,93,58,0.3);
+        --sidebar-bg: #2b1a10;
+        --sidebar-border: #5a3a28;
+        --input-bg: #3d2a1c;
+        --input-border: #5a3a28;
+        --tab-bg: #3d2a1c;
+        --tab-selected: #d4845a;
+        --header-bg: linear-gradient(135deg, #4a2a18, #8a4a2e);
         --header-text: #ffffff;
-        --header-subtext: #d4b896;
-        --btn-bg: linear-gradient(135deg, #b88a5a, #d4a373);
-        --btn-text: #2d1a0a;
-        --alert-bg: #3d2c1b;
-        --shadow-color: rgba(0,0,0,0.3);
+        --header-subtext: #d4b096;
+        --btn-bg: linear-gradient(135deg, #c46a44, #d4845a);
+        --btn-text: #2b1a10;
+        --alert-bg: #3d2a1c;
+        --shadow-color: rgba(0,0,0,0.4);
     }
 
     .stApp {
         background:
-            radial-gradient(circle at top left, rgba(193,154,107,0.15), transparent 35%),
+            radial-gradient(circle at top left, rgba(184,93,58,0.12), transparent 35%),
             linear-gradient(135deg, var(--bg-start), var(--bg-end));
         padding: 0;
     }
@@ -141,8 +141,8 @@ st.markdown("""
     }
     .doc-card:hover {
         transform: translateY(-10px);
-        box-shadow: 0 25px 50px rgba(193,154,107,0.3);
-        border-color: #c19a6b;
+        box-shadow: 0 25px 50px rgba(184,93,58,0.3);
+        border-color: #b85d3a;
     }
     .doc-card .icon {
         font-size: 3.2rem;
@@ -190,7 +190,7 @@ st.markdown("""
     .stButton button:hover,
     .stDownloadButton button:hover {
         transform: translateY(-3px);
-        box-shadow: 0 18px 35px rgba(193,154,107,0.4);
+        box-shadow: 0 18px 35px rgba(184,93,58,0.4);
     }
 
     /* Inputs */
@@ -207,8 +207,8 @@ st.markdown("""
     }
     .stTextInput > div > div > input:focus,
     .stTextArea > div > div > textarea:focus {
-        border-color: #c19a6b !important;
-        box-shadow: 0 0 0 4px rgba(193,154,107,0.2) !important;
+        border-color: #b85d3a !important;
+        box-shadow: 0 0 0 4px rgba(184,93,58,0.2) !important;
     }
     .stTextInput label,
     .stTextArea label,
@@ -255,15 +255,15 @@ st.markdown("""
         transition: .2s;
     }
     section[data-testid="stSidebar"] .stRadio label:hover {
-        background: rgba(193,154,107,0.15);
+        background: rgba(184,93,58,0.15);
     }
     section[data-testid="stSidebar"] .stRadio label[data-selected="true"] {
-        background: rgba(193,154,107,0.2);
-        color: #8b5a2b !important;
+        background: rgba(184,93,58,0.2);
+        color: #8a4a2e !important;
         font-weight: 500;
     }
     section[data-testid="stSidebar"] .stMetric {
-        background: rgba(255,248,235,0.5);
+        background: rgba(255,245,235,0.5);
         border-radius: 16px;
         padding: 10px;
         border: 1px solid var(--sidebar-border);
@@ -291,8 +291,8 @@ st.markdown("""
     /* Skill tags */
     .skill-tag {
         display: inline-block;
-        background: #ede0d0;
-        color: #3d2c1b !important;
+        background: #f0ddd0;
+        color: #2b1a10 !important;
         padding: 0.2rem 0.8rem;
         border-radius: 30px;
         font-size: 0.78rem;
@@ -301,7 +301,7 @@ st.markdown("""
         transition: .2s;
     }
     .skill-tag:hover {
-        background: #c19a6b;
+        background: #b85d3a;
         color: #fff !important;
         transform: scale(1.05);
     }
@@ -338,8 +338,8 @@ with st.sidebar:
     st.markdown("""
     <div style="text-align:center; padding:1.2rem 0 0.8rem 0;">
         <div style="font-size:2.8rem;">📄</div>
-        <div style="font-weight:700; font-size:1.5rem; color:#3d2c1b; letter-spacing:-0.5px;">DocForge</div>
-        <div style="font-size:0.85rem; color:#5a3f28; margin-top:0.2rem;">Professional Documents</div>
+        <div style="font-weight:700; font-size:1.5rem; color:#2b1a10; letter-spacing:-0.5px;">DocForge</div>
+        <div style="font-size:0.85rem; color:#5a3a28; margin-top:0.2rem;">Professional Documents</div>
     </div>
     """, unsafe_allow_html=True)
     st.markdown("---")
