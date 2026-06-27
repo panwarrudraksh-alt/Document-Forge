@@ -11,13 +11,13 @@ from job_scraper import get_jobs
 
 # ---- Page Config ----
 st.set_page_config(
-    page_title="DocForge AI – Professional Document Studio",
+    page_title="DocForge – Professional Document Builder",
     page_icon="📄",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# ---- Custom CSS (All Text Black, Light Backgrounds) ----
+# ---- Custom CSS (Camel & Cream Theme) ----
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
@@ -25,94 +25,101 @@ st.markdown("""
     * {
         font-family: 'Inter', sans-serif;
         box-sizing: border-box;
-        color: #0f172a !important;
     }
 
     .stApp {
         background:
-            radial-gradient(circle at top left, rgba(56,189,248,.15), transparent 35%),
-            linear-gradient(135deg,#f8fafc,#eef2ff);
+            radial-gradient(circle at top left, rgba(193,154,107,0.15), transparent 35%),
+            linear-gradient(135deg, var(--bg-start), var(--bg-end));
         padding: 0;
     }
 
-    
-    /* Premium modern dashboard polish */
-    .stApp {
-        min-height: 100vh;
+    /* Warm theme variables */
+    :root {
+        --bg-start: #fdf6ee;     /* cream */
+        --bg-end: #f5e6d3;       /* light beige */
+        --text-color: #3d2c1b;   /* dark brown */
+        --text-light: #5a3f28;
+        --card-bg: rgba(255,248,235,0.85);
+        --card-border: rgba(193,154,107,0.3);
+        --sidebar-bg: #f5e6d3;
+        --sidebar-border: #d4b896;
+        --input-bg: #fffcf5;
+        --input-border: #d4b896;
+        --tab-bg: #ede0d0;
+        --tab-selected: #c19a6b; /* camel */
+        --header-bg: linear-gradient(135deg, #8b5a2b, #c19a6b);
+        --header-text: #ffffff;
+        --header-subtext: #f5e6d3;
+        --btn-bg: linear-gradient(135deg, #b88a5a, #d4a373);
+        --btn-text: #2d1a0a;
+        --alert-bg: #f5e6d3;
+        --shadow-color: rgba(139,90,43,0.25);
     }
 
-    .app-header {
-        position: relative;
-        overflow: hidden;
+    /* Dark theme overrides – still warm but darker */
+    [data-theme="dark"] {
+        --bg-start: #2d1f12;
+        --bg-end: #3d2c1b;
+        --text-color: #f5e6d3;
+        --text-light: #d4b896;
+        --card-bg: rgba(60,45,30,0.85);
+        --card-border: rgba(193,154,107,0.3);
+        --sidebar-bg: #2d1f12;
+        --sidebar-border: #5a3f28;
+        --input-bg: #3d2c1b;
+        --input-border: #5a3f28;
+        --tab-bg: #3d2c1b;
+        --tab-selected: #c19a6b;
+        --header-bg: linear-gradient(135deg, #5a3f28, #8b5a2b);
+        --header-text: #ffffff;
+        --header-subtext: #d4b896;
+        --btn-bg: linear-gradient(135deg, #b88a5a, #d4a373);
+        --btn-text: #2d1a0a;
+        --alert-bg: #3d2c1b;
+        --shadow-color: rgba(0,0,0,0.3);
     }
 
-    .app-header:after {
-        content: "";
-        position: absolute;
-        width: 220px;
-        height: 220px;
-        right: -60px;
-        top: -70px;
-        background: rgba(255,255,255,.12);
-        border-radius: 50%;
-    }
-
-    .section-card {
-        transition: .3s ease;
-    }
-
-    .section-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 25px 55px rgba(15,23,42,.12);
-    }
-
-    .stMetric {
-        background: rgba(255,255,255,.75);
-        padding: 12px;
-        border-radius: 18px;
-        border: 1px solid rgba(148,163,184,.25);
-    }
-
-.block-container {
+    .block-container {
         padding-top: 2rem;
         padding-bottom: 3rem;
         max-width: 1400px;
     }
 
-    /* Header – keep white text on dark gradient */
+    /* Header */
     .app-header {
-        background:
-            linear-gradient(135deg,#0f172a,#1d4ed8);
+        background: var(--header-bg);
         padding: 2.4rem 3rem;
         border-radius: 28px;
-        box-shadow: 0 25px 60px rgba(15,23,42,.25);
+        box-shadow: 0 25px 60px var(--shadow-color);
         border: 1px solid rgba(255,255,255,.15);
         margin-bottom: 2rem;
         animation: fade .5s ease;
     }
     .app-header h1 {
-        color: white !important; /* override black */
+        color: var(--header-text) !important;
         font-size: 2.8rem;
         font-weight: 800;
         letter-spacing: -1px;
         margin: 0;
     }
     .app-header p {
-        color: #dbeafe !important; /* light blue */
+        color: var(--header-subtext) !important;
         font-size: 1.1rem;
         margin: 0.3rem 0 0;
     }
 
-    /* Cards – light background, black text */
+    /* Cards */
     .doc-card,
     .section-card {
-        background: rgba(255,255,255,.85);
+        background: var(--card-bg);
         backdrop-filter: blur(12px);
         border-radius: 24px;
-        border: 1px solid rgba(148,163,184,.2);
-        box-shadow: 0 15px 35px rgba(15,23,42,.08);
+        border: 1px solid var(--card-border);
+        box-shadow: 0 15px 35px var(--shadow-color);
         transition: .3s ease;
         animation: fade .5s ease;
+        color: var(--text-color) !important;
     }
     .doc-card {
         padding: 2rem 1.2rem;
@@ -122,24 +129,24 @@ st.markdown("""
     }
     .doc-card:hover {
         transform: translateY(-10px);
-        box-shadow: 0 25px 50px rgba(37,99,235,.18);
-        border-color: #38bdf8;
+        box-shadow: 0 25px 50px rgba(193,154,107,0.3);
+        border-color: #c19a6b;
     }
     .doc-card .icon {
         font-size: 3.2rem;
         display: block;
         margin-bottom: 0.5rem;
-        color: #000 !important;
+        color: var(--text-color) !important;
     }
     .doc-card .title {
         font-size: 1.2rem;
         font-weight: 700;
         margin: 0.3rem 0;
-        color: #000 !important;
+        color: var(--text-color) !important;
     }
     .doc-card .desc {
         font-size: 0.85rem;
-        color: #000 !important;
+        color: var(--text-light) !important;
     }
 
     .section-card {
@@ -149,13 +156,13 @@ st.markdown("""
     .section-card h3 {
         font-weight: 700;
         margin-top: 0;
-        color: #000 !important;
+        color: var(--text-color) !important;
     }
     .section-card div {
-        color: #000 !important;
+        color: var(--text-light) !important;
     }
 
-    /* Buttons – keep white text on gradient */
+    /* Buttons */
     .stButton button,
     .stDownloadButton button {
         width: 100%;
@@ -163,115 +170,117 @@ st.markdown("""
         border-radius: 14px !important;
         padding: .75rem 1.2rem !important;
         font-weight: 700 !important;
-        color: white !important;
-        background: linear-gradient(135deg,#2563eb,#06b6d4) !important;
-        box-shadow: 0 10px 25px rgba(37,99,235,.25);
+        color: var(--btn-text) !important;
+        background: var(--btn-bg) !important;
+        box-shadow: 0 10px 25px var(--shadow-color);
         transition: .25s ease;
     }
     .stButton button:hover,
     .stDownloadButton button:hover {
         transform: translateY(-3px);
-        box-shadow: 0 18px 35px rgba(37,99,235,.35);
+        box-shadow: 0 18px 35px rgba(193,154,107,0.4);
     }
 
-    /* Inputs & TextAreas – light background, black text */
+    /* Inputs */
     .stTextInput > div > div > input,
     .stTextArea > div > div > textarea,
     .stSelectbox > div > div {
         border-radius: 14px !important;
-        border: 2px solid #e2e8f0 !important;
-        background: white !important;
-        color: #000 !important;
+        border: 2px solid var(--input-border) !important;
+        background: var(--input-bg) !important;
+        color: var(--text-color) !important;
         padding: 0.6rem 1rem !important;
         font-size: 0.95rem;
         transition: border-color .3s, box-shadow .3s;
     }
     .stTextInput > div > div > input:focus,
     .stTextArea > div > div > textarea:focus {
-        border-color: #2563eb !important;
-        box-shadow: 0 0 0 4px rgba(37,99,235,.12) !important;
+        border-color: #c19a6b !important;
+        box-shadow: 0 0 0 4px rgba(193,154,107,0.2) !important;
     }
     .stTextInput label,
     .stTextArea label,
     .stSelectbox label {
-        color: #000 !important;
+        color: var(--text-color) !important;
         font-weight: 600 !important;
         font-size: 0.9rem;
     }
 
-    /* Tabs – light background, black text */
+    /* Tabs */
     .stTabs [data-baseweb="tab-list"] {
         gap: .7rem;
     }
     .stTabs [data-baseweb="tab"] {
         border-radius: 14px;
-        background: #e2e8f0;
+        background: var(--tab-bg);
         padding: .6rem 1.3rem;
-        color: #000 !important;
+        color: var(--text-color) !important;
         font-weight: 600;
         transition: .2s;
     }
     .stTabs [data-baseweb="tab"]:hover {
-        background: #cbd5e1;
+        background: var(--tab-selected);
+        color: #fff !important;
     }
     .stTabs [data-baseweb="tab"][aria-selected="true"] {
-        background: #2563eb !important;
-        color: white !important; /* selected tab text white on blue */
+        background: var(--tab-selected) !important;
+        color: #fff !important;
     }
 
-    /* Sidebar – now light background, black text */
+    /* Sidebar */
     section[data-testid="stSidebar"] {
-        background: #f1f5f9 !important;
-        border-right: 1px solid #d1d5db;
+        background: var(--sidebar-bg) !important;
+        border-right: 1px solid var(--sidebar-border);
     }
     section[data-testid="stSidebar"] * {
-        color: #000 !important;
+        color: var(--text-color) !important;
     }
     section[data-testid="stSidebar"] .stRadio label {
-        color: #000 !important;
+        color: var(--text-color) !important;
         font-weight: 400;
         padding: 0.4rem 0.8rem;
         border-radius: 8px;
         transition: .2s;
     }
     section[data-testid="stSidebar"] .stRadio label:hover {
-        background: rgba(37,99,235,.1);
+        background: rgba(193,154,107,0.15);
     }
     section[data-testid="stSidebar"] .stRadio label[data-selected="true"] {
-        background: rgba(37,99,235,.15);
-        color: #2563eb !important;
+        background: rgba(193,154,107,0.2);
+        color: #8b5a2b !important;
         font-weight: 500;
     }
     section[data-testid="stSidebar"] .stMetric {
-        background: rgba(255,255,255,.8);
+        background: rgba(255,248,235,0.5);
         border-radius: 16px;
         padding: 10px;
-        border: 1px solid #d1d5db;
+        border: 1px solid var(--sidebar-border);
     }
     section[data-testid="stSidebar"] .stMetric label {
-        color: #000 !important;
+        color: var(--text-color) !important;
     }
     section[data-testid="stSidebar"] .stMetric .stMetricValue {
-        color: #000 !important;
+        color: var(--text-color) !important;
         font-weight: 600;
     }
     section[data-testid="stSidebar"] .stCaption {
-        color: #000 !important;
+        color: var(--text-light) !important;
     }
 
-    /* Alerts – black text on light background */
+    /* Alerts */
     .stAlert {
         border-radius: 16px;
+        background: var(--alert-bg) !important;
     }
     .stAlert > div {
-        color: #000 !important;
+        color: var(--text-color) !important;
     }
 
-    /* Skill tags – dark text on light background */
+    /* Skill tags – warm */
     .skill-tag {
         display: inline-block;
-        background: #e2e8f0;
-        color: #000 !important;
+        background: #ede0d0;
+        color: #3d2c1b !important;
         padding: 0.2rem 0.8rem;
         border-radius: 30px;
         font-size: 0.78rem;
@@ -280,8 +289,8 @@ st.markdown("""
         transition: .2s;
     }
     .skill-tag:hover {
-        background: #2563eb;
-        color: white !important;
+        background: #c19a6b;
+        color: #fff !important;
         transform: scale(1.05);
     }
 
@@ -317,8 +326,8 @@ with st.sidebar:
     st.markdown("""
     <div style="text-align:center; padding:1.2rem 0 0.8rem 0;">
         <div style="font-size:2.8rem;">📄</div>
-        <div style="font-weight:700; font-size:1.5rem; color:#0f172a; letter-spacing:-0.5px;">DocForge</div>
-        <div style="color:#000; font-size:0.85rem; margin-top:0.2rem;">Professional Documents</div>
+        <div style="font-weight:700; font-size:1.5rem; color:#3d2c1b; letter-spacing:-0.5px;">DocForge</div>
+        <div style="font-size:0.85rem; color:#5a3f28; margin-top:0.2rem;">Professional Documents</div>
     </div>
     """, unsafe_allow_html=True)
     st.markdown("---")
@@ -403,22 +412,22 @@ if page == "🏠 Home":
             <div style="text-align:center;">
                 <div style="font-size:2.2rem;">1️⃣</div>
                 <div><strong>Enter Details</strong></div>
-                <div style="color:#000; font-size:0.85rem;">Fill once</div>
+                <div style="font-size:0.85rem; opacity:0.7;">Fill once</div>
             </div>
             <div style="text-align:center;">
                 <div style="font-size:2.2rem;">2️⃣</div>
                 <div><strong>Choose Document</strong></div>
-                <div style="color:#000; font-size:0.85rem;">Select type</div>
+                <div style="font-size:0.85rem; opacity:0.7;">Select type</div>
             </div>
             <div style="text-align:center;">
                 <div style="font-size:2.2rem;">3️⃣</div>
                 <div><strong>Customize</strong></div>
-                <div style="color:#000; font-size:0.85rem;">Add specifics</div>
+                <div style="font-size:0.85rem; opacity:0.7;">Add specifics</div>
             </div>
             <div style="text-align:center;">
                 <div style="font-size:2.2rem;">4️⃣</div>
                 <div><strong>Download PDF</strong></div>
-                <div style="color:#000; font-size:0.85rem;">Instant professional PDF</div>
+                <div style="font-size:0.85rem; opacity:0.7;">Instant professional PDF</div>
             </div>
         </div>
     </div>
