@@ -30,7 +30,7 @@ st.markdown("""
     .stApp {
         background:
             radial-gradient(circle at top left, rgba(56,189,248,.15), transparent 35%),
-            linear-gradient(135deg,#f8fafc,#eef2ff);
+            linear-gradient(137deg,#f8fafc,#eef2ff);
         padding: 0;
     }
 
