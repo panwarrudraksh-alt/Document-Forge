@@ -178,18 +178,59 @@ st.markdown("""
         .about-section .avatar { width: 100px; height: 100px; font-size: 2.5rem; }
     }
 
-    /* Features */
+    /* Features grid – now using st.button styled as cards */
+    .feature-card-btn {
+        display: block;
+        width: 100%;
+        background: var(--card-bg);
+        backdrop-filter: blur(8px);
+        border: 1px solid var(--card-border);
+        border-radius: 24px;
+        padding: 2rem 1.5rem;
+        text-align: center;
+        transition: all 0.3s;
+        cursor: pointer;
+        font-family: inherit;
+        color: var(--text-color);
+        font-size: 1rem;
+        line-height: 1.5;
+        box-shadow: none;
+    }
+    .feature-card-btn:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px var(--shadow-color);
+        border-color: var(--primary);
+    }
+    .feature-card-btn .icon {
+        font-size: 2.8rem;
+        display: block;
+        margin-bottom: 0.5rem;
+    }
+    .feature-card-btn h3 {
+        font-weight: 700;
+        font-size: 1.3rem;
+        margin: 0.5rem 0 0.25rem;
+    }
+    .feature-card-btn p {
+        color: var(--text-light);
+        font-size: 0.95rem;
+        margin: 0;
+    }
+    .feature-card-btn:active {
+        transform: scale(0.98);
+    }
+
     .section-header { text-align: center; margin: 3rem 0 2rem; }
     .section-header .badge { display: inline-block; background: var(--card-border); color: var(--primary); padding: 0.2rem 1rem; border-radius: 30px; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
     .section-header h2 { font-size: 2.5rem; font-weight: 800; color: var(--text-color); margin-top: 0.5rem; }
     .section-header p { color: var(--text-light); max-width: 600px; margin: 0.5rem auto 0; }
 
-    .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin: 2rem 0; }
-    .feature-card { background: var(--card-bg); backdrop-filter: blur(8px); border-radius: 24px; padding: 2rem 1.5rem; border: 1px solid var(--card-border); transition: all 0.3s; text-align: center; }
-    .feature-card:hover { transform: translateY(-8px); box-shadow: 0 20px 40px var(--shadow-color); border-color: var(--primary); }
-    .feature-card .icon { font-size: 2.8rem; margin-bottom: 0.5rem; display: block; }
-    .feature-card h3 { color: var(--text-color); font-weight: 700; font-size: 1.3rem; }
-    .feature-card p { color: var(--text-light); font-size: 0.95rem; margin-top: 0.5rem; }
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        margin: 2rem 0;
+    }
 
     /* CTA */
     .cta-section { background: var(--header-bg); border-radius: 32px; padding: 3rem 2rem; text-align: center; color: white; margin: 3rem 0; box-shadow: 0 20px 50px var(--shadow-color); }
@@ -335,6 +376,13 @@ if "chat_messages" not in st.session_state:
     st.session_state.chat_messages = []
 if "chat_input" not in st.session_state:
     st.session_state.chat_input = ""
+if "page" not in st.session_state:
+    st.session_state.page = "Home"
+
+# ---- Page navigation helper ----
+def go_to_page(page_name):
+    st.session_state.page = page_name
+    st.rerun()
 
 # ---- Sidebar Navigation ----
 with st.sidebar:
@@ -347,11 +395,29 @@ with st.sidebar:
     """, unsafe_allow_html=True)
     st.markdown("---")
 
-    page = st.radio(
+    page_choices = ["🏠 Home", "📝 Builder", "📄 Resume", "📋 CV", "✉️ Cover Letter", "📊 Proposal", "🏆 Experience", "🔍 Job Scraper", "🤖 AI Assistant"]
+    current_index = page_choices.index([p for p in page_choices if p.split(" ")[-1] == st.session_state.page][0]) if any(p.split(" ")[-1] == st.session_state.page for p in page_choices) else 0
+
+    selected = st.radio(
         "Navigate",
-        ["🏠 Home", "📝 Builder", "📄 Resume", "📋 CV", "✉️ Cover Letter", "📊 Proposal", "🏆 Experience", "🔍 Job Scraper", "🤖 AI Assistant"],
+        page_choices,
+        index=current_index,
         label_visibility="collapsed"
     )
+    # Map selection to page key
+    page_map = {
+        "🏠 Home": "Home",
+        "📝 Builder": "Builder",
+        "📄 Resume": "Resume",
+        "📋 CV": "CV",
+        "✉️ Cover Letter": "CoverLetter",
+        "📊 Proposal": "Proposal",
+        "🏆 Experience": "Experience",
+        "🔍 Job Scraper": "JobScraper",
+        "🤖 AI Assistant": "AIAssistant"
+    }
+    if selected:
+        st.session_state.page = page_map[selected]
 
     st.markdown("---")
     col1, col2 = st.columns(2)
@@ -363,19 +429,8 @@ with st.sidebar:
     if st.button("🌓 Toggle Theme", use_container_width=True):
         st.markdown("<script>toggleTheme();</script>", unsafe_allow_html=True)
 
-# ---- Map page names ----
-page_map = {
-    "🏠 Home": "Home",
-    "📝 Builder": "Builder",
-    "📄 Resume": "Resume",
-    "📋 CV": "CV",
-    "✉️ Cover Letter": "CoverLetter",
-    "📊 Proposal": "Proposal",
-    "🏆 Experience": "Experience",
-    "🔍 Job Scraper": "JobScraper",
-    "🤖 AI Assistant": "AIAssistant"
-}
-page = page_map.get(page, "Home")
+# ---- Determine current page ----
+page = st.session_state.page
 
 # ---- Helper ----
 def get_user_data():
@@ -407,13 +462,13 @@ if page == "Home":
         <h1>Create <span>Professional Documents</span><br>Instantly</h1>
         <p>Build resumes, CVs, cover letters, proposals, and experience letters – all from one platform. No design skills needed.</p>
         <div class="buttons">
-            <a href="#" class="btn-primary" onclick="document.querySelector('[data-testid=\\"stButton\\"] button').click()">Get Started Free</a>
+            <button class="btn-primary" onclick="document.querySelector('[data-testid=\\"stButton\\"] button')?.click()">Get Started Free</button>
             <a href="#about" class="btn-secondary">Learn More</a>
         </div>
     </div>
     """, unsafe_allow_html=True)
 
-    # ---- ABOUT ME (authentic) ----
+    # About Me
     st.markdown("""
     <div class="about-section" id="about">
         <div class="text">
@@ -429,32 +484,53 @@ if page == "Home":
     </div>
     """, unsafe_allow_html=True)
 
-    # ---- Features (keep) ----
+    # Features – clickable cards
     st.markdown("""
     <div class="section-header">
         <span class="badge">Features</span>
         <h2>Everything You Need</h2>
-        <p>Complete toolkit for creating professional documents.</p>
+        <p>Click any card to jump directly to that tool.</p>
     </div>
     <div class="features-grid">
-        <div class="feature-card"><span class="icon">📄</span><h3>Resume Builder</h3><p>ATS-friendly resumes with multiple themes.</p></div>
-        <div class="feature-card"><span class="icon">📋</span><h3>CV Generator</h3><p>Comprehensive curriculum vitae with publications.</p></div>
-        <div class="feature-card"><span class="icon">✉️</span><h3>Cover Letters</h3><p>Personalized letters for job applications.</p></div>
-        <div class="feature-card"><span class="icon">📊</span><h3>Proposals</h3><p>Professional project proposals for clients.</p></div>
-        <div class="feature-card"><span class="icon">🏆</span><h3>Experience Letters</h3><p>Employment verification letters.</p></div>
-        <div class="feature-card"><span class="icon">🔍</span><h3>Job Scraper</h3><p>Find jobs and match your skills.</p></div>
-        <div class="feature-card"><span class="icon">🤖</span><h3>AI Assistant</h3><p>Get AI-powered suggestions and help.</p></div>
-    </div>
     """, unsafe_allow_html=True)
 
-    # ---- CTA ----
+    # Define features as list of (icon, title, description, page_key)
+    features = [
+        ("📄", "Resume Builder", "ATS-friendly resumes with multiple themes.", "Resume"),
+        ("📋", "CV Generator", "Comprehensive curriculum vitae with publications.", "CV"),
+        ("✉️", "Cover Letters", "Personalized letters for job applications.", "CoverLetter"),
+        ("📊", "Proposal Generator", "Professional project proposals for clients.", "Proposal"),
+        ("🏆", "Experience Letters", "Employment verification letters.", "Experience"),
+        ("🔍", "Job Scraper", "Find jobs and match your skills.", "JobScraper"),
+        ("🤖", "AI Assistant", "Get AI-powered suggestions and help.", "AIAssistant"),
+    ]
+
+    cols = st.columns(3)  # we'll fill row by row
+    for i, (icon, title, desc, page_key) in enumerate(features):
+        with cols[i % 3]:
+            # Use a button with custom styling via CSS class
+            if st.button(
+                f"{icon}\n\n**{title}**\n\n{desc}",
+                key=f"home_feature_{page_key}",
+                use_container_width=True,
+                type="secondary",
+            ):
+                go_to_page(page_key)
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    # CTA
     st.markdown("""
     <div class="cta-section">
         <h2>Ready to Build Your Document?</h2>
         <p>Get started now – it's free and takes less than 5 minutes.</p>
-        <a href="#" class="btn-cta" onclick="document.querySelector('[data-testid=\\"stButton\\"] button').click()">Start Building</a>
+        <button class="btn-cta" onclick="document.querySelector('[data-testid=\\"stButton\\"] button')?.click()">Start Building</button>
     </div>
     """, unsafe_allow_html=True)
+
+    # Hidden button to trigger "Get Started Free" – we'll use a button that sets page to "Builder"
+    if st.button("Get Started Free (hidden)", key="home_get_started", use_container_width=False, type="primary"):
+        go_to_page("Builder")
 
 # ---- BUILDER ----
 elif page == "Builder":
