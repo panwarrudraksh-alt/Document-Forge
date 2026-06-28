@@ -2,3 +2,4 @@ streamlit
 reportlab
 beautifulsoup4
 requests
+mistralai
