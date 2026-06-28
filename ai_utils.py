@@ -118,3 +118,8 @@ def ai_improve_text(text, context=""):
         return "Please enter more text to improve."
     prompt = f"Improve the following {context} to be more professional, impactful, and concise:\n\n{text}"
     return call_mistral(prompt, max_tokens=300)
+    try:
+    from mistralai import Mistral
+except ImportError:
+    Mistral = None
+    st.warning("Mistral package not installed. AI features disabled.")
