@@ -178,7 +178,7 @@ st.markdown("""
         .about-section .avatar { width: 100px; height: 100px; font-size: 2.5rem; }
     }
 
-    /* Features grid – now using st.button styled as cards */
+    /* Features grid */
     .feature-card-btn {
         display: block;
         width: 100%;
@@ -232,12 +232,38 @@ st.markdown("""
         margin: 2rem 0;
     }
 
-    /* CTA */
-    .cta-section { background: var(--header-bg); border-radius: 32px; padding: 3rem 2rem; text-align: center; color: white; margin: 3rem 0; box-shadow: 0 20px 50px var(--shadow-color); }
+    /* CTA section */
+    .cta-section {
+        background: var(--header-bg);
+        border-radius: 32px;
+        padding: 3rem 2rem;
+        text-align: center;
+        color: white;
+        margin: 3rem 0;
+        box-shadow: 0 20px 50px var(--shadow-color);
+    }
     .cta-section h2 { font-size: 2.5rem; font-weight: 800; }
     .cta-section p { opacity: 0.9; max-width: 600px; margin: 0.5rem auto 1.5rem; }
-    .cta-section .btn-cta { background: white; color: var(--primary-dark); padding: 0.8rem 2.5rem; border-radius: 12px; font-weight: 700; border: none; transition: all 0.3s; text-decoration: none; display: inline-block; }
-    .cta-section .btn-cta:hover { transform: scale(1.03); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+
+    /* CTA button – uses Streamlit button with key "cta_start_building" */
+    button[data-testid="baseButton-cta_start_building"] {
+        background: white !important;
+        color: var(--primary-dark) !important;
+        border: none !important;
+        border-radius: 12px !important;
+        padding: 0.8rem 2.5rem !important;
+        font-weight: 700 !important;
+        font-size: 1rem !important;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2) !important;
+        transition: all 0.3s !important;
+        width: auto !important;
+        display: inline-block !important;
+    }
+    button[data-testid="baseButton-cta_start_building"]:hover {
+        transform: scale(1.03) !important;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.3) !important;
+        background: #f8f9fa !important;
+    }
 
     .footer {
         border-top: 1px solid var(--card-border);
@@ -404,7 +430,6 @@ with st.sidebar:
         index=current_index,
         label_visibility="collapsed"
     )
-    # Map selection to page key
     page_map = {
         "🏠 Home": "Home",
         "📝 Builder": "Builder",
@@ -468,6 +493,10 @@ if page == "Home":
     </div>
     """, unsafe_allow_html=True)
 
+    # Hidden button for "Get Started Free" – clicking the hero button triggers this
+    if st.button("Get Started Free (hidden)", key="home_get_started", use_container_width=False, type="primary"):
+        go_to_page("Builder")
+
     # About Me
     st.markdown("""
     <div class="about-section" id="about">
@@ -494,7 +523,6 @@ if page == "Home":
     <div class="features-grid">
     """, unsafe_allow_html=True)
 
-    # Define features as list of (icon, title, description, page_key)
     features = [
         ("📄", "Resume Builder", "ATS-friendly resumes with multiple themes.", "Resume"),
         ("📋", "CV Generator", "Comprehensive curriculum vitae with publications.", "CV"),
@@ -505,10 +533,9 @@ if page == "Home":
         ("🤖", "AI Assistant", "Get AI-powered suggestions and help.", "AIAssistant"),
     ]
 
-    cols = st.columns(3)  # we'll fill row by row
+    cols = st.columns(3)
     for i, (icon, title, desc, page_key) in enumerate(features):
         with cols[i % 3]:
-            # Use a button with custom styling via CSS class
             if st.button(
                 f"{icon}\n\n**{title}**\n\n{desc}",
                 key=f"home_feature_{page_key}",
@@ -519,18 +546,22 @@ if page == "Home":
 
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # CTA
+    # CTA section with Streamlit button
     st.markdown("""
     <div class="cta-section">
         <h2>Ready to Build Your Document?</h2>
         <p>Get started now – it's free and takes less than 5 minutes.</p>
-        <button class="btn-cta" onclick="document.querySelector('[data-testid=\\"stButton\\"] button')?.click()">Start Building</button>
-    </div>
+        <div style="display: flex; justify-content: center; margin-top: 1.5rem;">
     """, unsafe_allow_html=True)
 
-    # Hidden button to trigger "Get Started Free" – we'll use a button that sets page to "Builder"
-    if st.button("Get Started Free (hidden)", key="home_get_started", use_container_width=False, type="primary"):
+    # The button – styled via CSS using its key
+    if st.button("Start Building", key="cta_start_building", use_container_width=False, type="primary"):
         go_to_page("Builder")
+
+    st.markdown("""
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
 # ---- BUILDER ----
 elif page == "Builder":
