@@ -507,28 +507,32 @@ if page == "Home":
         st.session_state.show_support_modal = not st.session_state.show_support_modal
         st.rerun()
 
-    # Support Modal with Fireworks
+    # Support Modal with Fireworks (base64 embedded)
     if st.session_state.show_support_modal:
-        support_html = """
+        # IMPORTANT: Replace PLACEHOLDER_BASE64_STRING with your actual base64 QR code.
+        # To generate, run:
+        # import base64
+        # with open("static/upi_qr.jpeg", "rb") as f:
+        #     print("data:image/jpeg;base64," + base64.b64encode(f.read()).decode())
+        base64_qr = "PLACEHOLDER_BASE64_STRING"  # <-- PASTE YOUR BASE64 STRING HERE
+
+        support_html = f"""
         <div id="support-modal" style="position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7); backdrop-filter:blur(8px); z-index:9999; display:flex; align-items:center; justify-content:center; animation:fadeIn 0.5s ease;">
             <div style="background:white; border-radius:24px; padding:2rem; max-width:90vw; max-height:90vh; overflow:auto; position:relative; box-shadow:0 30px 80px rgba(0,0,0,0.5);">
-                <button onclick="document.getElementById('support-modal').style.display='none'; window.parent.postMessage({type:'streamlit:setComponentValue', value:false}, '*');" style="position:absolute; top:12px; right:16px; background:none; border:none; font-size:1.8rem; cursor:pointer; color:#333;">✕</button>
+                <button onclick="document.getElementById('support-modal').style.display='none'; window.parent.postMessage({{type:'streamlit:setComponentValue', value:false}}, '*');" style="position:absolute; top:12px; right:16px; background:none; border:none; font-size:1.8rem; cursor:pointer; color:#333;">✕</button>
                 <h2 style="text-align:center; color:#1a2a3a; margin-bottom:1rem;">Support the Developer ❤️</h2>
                 <div style="text-align:center;">
-                    <img src="static/upi_qr.jpeg" alt="UPI QR Code" style="max-width:300px; width:100%; height:auto; border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,0.1);" onerror="this.style.display='none'; document.getElementById('fallback-text').style.display='block';">
-                    <p id="fallback-text" style="display:none; color:#666; font-size:1.1rem; margin-top:1rem;">QR Code image not found.<br>Please add <code>static/upi_qr.jpeg</code> to your project.</p>
+                    <img src="{base64_qr}" alt="UPI QR Code" style="max-width:300px; width:100%; height:auto; border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,0.1);">
                     <p style="margin-top:0.5rem; color:#666;">Scan to support – every contribution helps! 🙏</p>
                 </div>
-                <!-- Fireworks Canvas -->
                 <canvas id="fireworks-canvas" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; border-radius:24px;"></canvas>
             </div>
         </div>
         <style>
-            @keyframes fadeIn { from { opacity:0; transform:scale(0.9); } to { opacity:1; transform:scale(1); } }
+            @keyframes fadeIn {{ from {{ opacity:0; transform:scale(0.9); }} to {{ opacity:1; transform:scale(1); }} }}
         </style>
         <script>
-            // Fireworks animation
-            (function() {
+            (function() {{
                 const canvas = document.getElementById('fireworks-canvas');
                 if (!canvas) return;
                 const ctx = canvas.getContext('2d');
@@ -536,18 +540,18 @@ if page == "Home":
                 const particles = [];
                 const colors = ['#ff6b6b', '#ffd93d', '#6bcb77', '#4d96ff', '#ff6bff', '#ffb347'];
 
-                function resize() {
+                function resize() {{
                     const rect = canvas.parentElement.getBoundingClientRect();
                     canvas.width = rect.width;
                     canvas.height = rect.height;
                     width = canvas.width;
                     height = canvas.height;
-                }
+                }}
                 resize();
                 window.addEventListener('resize', resize);
 
-                class Particle {
-                    constructor(x, y) {
+                class Particle {{
+                    constructor(x, y) {{
                         this.x = x;
                         this.y = y;
                         const angle = Math.random() * 2 * Math.PI;
@@ -559,9 +563,9 @@ if page == "Home":
                         this.radius = Math.random() * 4 + 2;
                         this.color = colors[Math.floor(Math.random() * colors.length)];
                         this.trail = [];
-                    }
-                    update() {
-                        this.trail.push({x: this.x, y: this.y});
+                    }}
+                    update() {{
+                        this.trail.push({{x: this.x, y: this.y}});
                         if (this.trail.length > 8) this.trail.shift();
                         this.x += this.vx;
                         this.y += this.vy;
@@ -569,61 +573,61 @@ if page == "Home":
                         this.vx *= 0.99;
                         this.vy *= 0.99;
                         this.life -= this.decay;
-                    }
-                    draw() {
-                        for (let i = 0; i < this.trail.length; i++) {
+                    }}
+                    draw() {{
+                        for (let i = 0; i < this.trail.length; i++) {{
                             const alpha = (i / this.trail.length) * 0.8;
                             ctx.beginPath();
                             ctx.arc(this.trail[i].x, this.trail[i].y, this.radius * (i / this.trail.length), 0, Math.PI * 2);
                             ctx.fillStyle = this.color + Math.floor(alpha * 255).toString(16).padStart(2, '0');
                             ctx.fill();
-                        }
+                        }}
                         ctx.beginPath();
                         ctx.arc(this.x, this.y, this.radius * this.life, 0, Math.PI * 2);
                         ctx.fillStyle = this.color;
                         ctx.globalAlpha = this.life;
                         ctx.fill();
                         ctx.globalAlpha = 1;
-                    }
-                }
+                    }}
+                }}
 
-                function launchFirework() {
+                function launchFirework() {{
                     const x = Math.random() * width * 0.8 + width * 0.1;
                     const y = Math.random() * height * 0.6 + height * 0.1;
                     const count = 80 + Math.floor(Math.random() * 60);
-                    for (let i = 0; i < count; i++) {
+                    for (let i = 0; i < count; i++) {{
                         particles.push(new Particle(x, y));
-                    }
-                }
+                    }}
+                }}
 
-                function animate() {
+                function animate() {{
                     ctx.clearRect(0, 0, width, height);
-                    for (let i = particles.length - 1; i >= 0; i--) {
+                    for (let i = particles.length - 1; i >= 0; i--) {{
                         const p = particles[i];
                         p.update();
                         p.draw();
-                        if (p.life <= 0) {
+                        if (p.life <= 0) {{
                             particles.splice(i, 1);
-                        }
-                    }
-                    if (particles.length < 200) {
+                        }}
+                    }}
+                    if (particles.length < 200) {{
                         if (Math.random() < 0.05) launchFirework();
-                    }
+                    }}
                     requestAnimationFrame(animate);
-                }
+                }}
 
-                for (let i = 0; i < 5; i++) {
+                for (let i = 0; i < 5; i++) {{
                     setTimeout(launchFirework, i * 200);
-                }
+                }}
                 setInterval(launchFirework, 800);
                 animate();
 
                 const modal = document.getElementById('support-modal');
-                const observer = new MutationObserver(() => {
-                    if (modal.style.display === 'none') { /* no-op */ }
-                });
-                observer.observe(modal, { attributes: true, attributeFilter: ['style'] });
-            })();
+                const observer = new MutationObserver(() => {{
+                    if (modal.style.display === 'none') {{ /* no-op */ }}
+                }});
+                observer.observe(modal, {{ attributes: true, attributeFilter: ['style'] }});
+            }})();
         </script>
         """
         st.components.v1.html(support_html, height=0)
