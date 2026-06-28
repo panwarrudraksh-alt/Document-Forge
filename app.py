@@ -507,14 +507,10 @@ if page == "Home":
         st.session_state.show_support_modal = not st.session_state.show_support_modal
         st.rerun()
 
-    # Support Modal with Fireworks (base64 embedded)
+    # Support Modal with Fireworks – using GitHub raw URL (api_qr.jpeg)
     if st.session_state.show_support_modal:
-        # IMPORTANT: Replace PLACEHOLDER_BASE64_STRING with your actual base64 QR code.
-        # To generate, run:
-        # import base64
-        # with open("static/upi_qr.jpeg", "rb") as f:
-        #     print("data:image/jpeg;base64," + base64.b64encode(f.read()).decode())
-        base64_qr = "PLACEHOLDER_BASE64_STRING"  # <-- PASTE YOUR BASE64 STRING HERE
+        # ── This is your correct raw URL ──
+        qr_image_url = "https://raw.githubusercontent.com/panwarrudraksh-alt/Document-Forge/main/static/api_qr.jpeg"
 
         support_html = f"""
         <div id="support-modal" style="position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7); backdrop-filter:blur(8px); z-index:9999; display:flex; align-items:center; justify-content:center; animation:fadeIn 0.5s ease;">
@@ -522,7 +518,8 @@ if page == "Home":
                 <button onclick="document.getElementById('support-modal').style.display='none'; window.parent.postMessage({{type:'streamlit:setComponentValue', value:false}}, '*');" style="position:absolute; top:12px; right:16px; background:none; border:none; font-size:1.8rem; cursor:pointer; color:#333;">✕</button>
                 <h2 style="text-align:center; color:#1a2a3a; margin-bottom:1rem;">Support the Developer ❤️</h2>
                 <div style="text-align:center;">
-                    <img src="{base64_qr}" alt="UPI QR Code" style="max-width:300px; width:100%; height:auto; border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,0.1);">
+                    <img src="{qr_image_url}" alt="UPI QR Code" style="max-width:300px; width:100%; height:auto; border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,0.1);" onerror="this.style.display='none'; document.getElementById('fallback-text').style.display='block';">
+                    <p id="fallback-text" style="display:none; color:#666; font-size:1.1rem; margin-top:1rem;">QR Code not loaded. Please check the URL.</p>
                     <p style="margin-top:0.5rem; color:#666;">Scan to support – every contribution helps! 🙏</p>
                 </div>
                 <canvas id="fireworks-canvas" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; border-radius:24px;"></canvas>
