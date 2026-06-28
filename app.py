@@ -141,6 +141,10 @@ st.markdown("""
         background: transparent; color: var(--text-color); padding: 0.8rem 2rem; border-radius: 12px; font-weight: 600; border: 1px solid var(--card-border); transition: all 0.3s; text-decoration: none; display: inline-block;
     }
     .hero .buttons .btn-secondary:hover { background: var(--card-bg); border-color: var(--primary); }
+    .hero .buttons .btn-support {
+        background: #f43f5e; color: white; padding: 0.8rem 2rem; border-radius: 12px; font-weight: 600; border: none; box-shadow: 0 10px 25px rgba(244,63,94,0.3); transition: all 0.3s; text-decoration: none; display: inline-block;
+    }
+    .hero .buttons .btn-support:hover { transform: translateY(-3px); box-shadow: 0 18px 35px rgba(244,63,94,0.4); background: #e11d48; }
 
     /* About section */
     .about-section {
@@ -245,7 +249,6 @@ st.markdown("""
     .cta-section h2 { font-size: 2.5rem; font-weight: 800; }
     .cta-section p { opacity: 0.9; max-width: 600px; margin: 0.5rem auto 1.5rem; }
 
-    /* CTA button – uses Streamlit button with key "cta_start_building" */
     button[data-testid="baseButton-cta_start_building"] {
         background: white !important;
         color: var(--primary-dark) !important;
@@ -404,6 +407,8 @@ if "chat_input" not in st.session_state:
     st.session_state.chat_input = ""
 if "page" not in st.session_state:
     st.session_state.page = "Home"
+if "show_support_modal" not in st.session_state:
+    st.session_state.show_support_modal = False
 
 # ---- Page navigation helper ----
 def go_to_page(page_name):
@@ -489,13 +494,142 @@ if page == "Home":
         <div class="buttons">
             <button class="btn-primary" onclick="document.querySelector('[data-testid=\\"stButton\\"] button')?.click()">Get Started Free</button>
             <a href="#about" class="btn-secondary">Learn More</a>
+            <button class="btn-support" onclick="document.querySelector('[data-testid=\\"stButton\\"] button')?.click()">Support Me 💖</button>
         </div>
     </div>
     """, unsafe_allow_html=True)
 
-    # Hidden button for "Get Started Free" – clicking the hero button triggers this
+    # Hidden buttons to handle clicks
     if st.button("Get Started Free (hidden)", key="home_get_started", use_container_width=False, type="primary"):
         go_to_page("Builder")
+
+    if st.button("Support Me (hidden)", key="home_support", use_container_width=False, type="secondary"):
+        st.session_state.show_support_modal = not st.session_state.show_support_modal
+        st.rerun()
+
+    # Support Modal with Fireworks
+    if st.session_state.show_support_modal:
+        support_html = """
+        <div id="support-modal" style="position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7); backdrop-filter:blur(8px); z-index:9999; display:flex; align-items:center; justify-content:center; animation:fadeIn 0.5s ease;">
+            <div style="background:white; border-radius:24px; padding:2rem; max-width:90vw; max-height:90vh; overflow:auto; position:relative; box-shadow:0 30px 80px rgba(0,0,0,0.5);">
+                <button onclick="document.getElementById('support-modal').style.display='none'; window.parent.postMessage({type:'streamlit:setComponentValue', value:false}, '*');" style="position:absolute; top:12px; right:16px; background:none; border:none; font-size:1.8rem; cursor:pointer; color:#333;">✕</button>
+                <h2 style="text-align:center; color:#1a2a3a; margin-bottom:1rem;">Support the Developer ❤️</h2>
+                <div style="text-align:center;">
+                    <img src="static/upi_qr.jpeg" alt="UPI QR Code" style="max-width:300px; width:100%; height:auto; border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,0.1);" onerror="this.style.display='none'; document.getElementById('fallback-text').style.display='block';">
+                    <p id="fallback-text" style="display:none; color:#666; font-size:1.1rem; margin-top:1rem;">QR Code image not found.<br>Please add <code>static/upi_qr.jpeg</code> to your project.</p>
+                    <p style="margin-top:0.5rem; color:#666;">Scan to support – every contribution helps! 🙏</p>
+                </div>
+                <!-- Fireworks Canvas -->
+                <canvas id="fireworks-canvas" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; border-radius:24px;"></canvas>
+            </div>
+        </div>
+        <style>
+            @keyframes fadeIn { from { opacity:0; transform:scale(0.9); } to { opacity:1; transform:scale(1); } }
+        </style>
+        <script>
+            // Fireworks animation
+            (function() {
+                const canvas = document.getElementById('fireworks-canvas');
+                if (!canvas) return;
+                const ctx = canvas.getContext('2d');
+                let width, height;
+                const particles = [];
+                const colors = ['#ff6b6b', '#ffd93d', '#6bcb77', '#4d96ff', '#ff6bff', '#ffb347'];
+
+                function resize() {
+                    const rect = canvas.parentElement.getBoundingClientRect();
+                    canvas.width = rect.width;
+                    canvas.height = rect.height;
+                    width = canvas.width;
+                    height = canvas.height;
+                }
+                resize();
+                window.addEventListener('resize', resize);
+
+                class Particle {
+                    constructor(x, y) {
+                        this.x = x;
+                        this.y = y;
+                        const angle = Math.random() * 2 * Math.PI;
+                        const speed = Math.random() * 6 + 2;
+                        this.vx = Math.cos(angle) * speed;
+                        this.vy = Math.sin(angle) * speed;
+                        this.life = 1;
+                        this.decay = Math.random() * 0.015 + 0.005;
+                        this.radius = Math.random() * 4 + 2;
+                        this.color = colors[Math.floor(Math.random() * colors.length)];
+                        this.trail = [];
+                    }
+                    update() {
+                        this.trail.push({x: this.x, y: this.y});
+                        if (this.trail.length > 8) this.trail.shift();
+                        this.x += this.vx;
+                        this.y += this.vy;
+                        this.vy += 0.05; // gravity
+                        this.vx *= 0.99;
+                        this.vy *= 0.99;
+                        this.life -= this.decay;
+                    }
+                    draw() {
+                        for (let i = 0; i < this.trail.length; i++) {
+                            const alpha = (i / this.trail.length) * 0.8;
+                            ctx.beginPath();
+                            ctx.arc(this.trail[i].x, this.trail[i].y, this.radius * (i / this.trail.length), 0, Math.PI * 2);
+                            ctx.fillStyle = this.color + Math.floor(alpha * 255).toString(16).padStart(2, '0');
+                            ctx.fill();
+                        }
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius * this.life, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.globalAlpha = this.life;
+                        ctx.fill();
+                        ctx.globalAlpha = 1;
+                    }
+                }
+
+                function launchFirework() {
+                    const x = Math.random() * width * 0.8 + width * 0.1;
+                    const y = Math.random() * height * 0.6 + height * 0.1;
+                    const count = 80 + Math.floor(Math.random() * 60);
+                    for (let i = 0; i < count; i++) {
+                        particles.push(new Particle(x, y));
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, width, height);
+                    for (let i = particles.length - 1; i >= 0; i--) {
+                        const p = particles[i];
+                        p.update();
+                        p.draw();
+                        if (p.life <= 0) {
+                            particles.splice(i, 1);
+                        }
+                    }
+                    if (particles.length < 200) {
+                        if (Math.random() < 0.05) launchFirework();
+                    }
+                    requestAnimationFrame(animate);
+                }
+
+                // Initial burst
+                for (let i = 0; i < 5; i++) {
+                    setTimeout(launchFirework, i * 200);
+                }
+                setInterval(launchFirework, 800);
+                animate();
+
+                const modal = document.getElementById('support-modal');
+                const observer = new MutationObserver(() => {
+                    if (modal.style.display === 'none') {
+                        // no-op – animation will continue but canvas hidden
+                    }
+                });
+                observer.observe(modal, { attributes: true, attributeFilter: ['style'] });
+            })();
+        </script>
+        """
+        st.components.v1.html(support_html, height=0)
 
     # About Me
     st.markdown("""
@@ -554,7 +688,6 @@ if page == "Home":
         <div style="display: flex; justify-content: center; margin-top: 1.5rem;">
     """, unsafe_allow_html=True)
 
-    # The button – styled via CSS using its key
     if st.button("Start Building", key="cta_start_building", use_container_width=False, type="primary"):
         go_to_page("Builder")
 
