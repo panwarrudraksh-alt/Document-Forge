@@ -1,66 +1,55 @@
 """
-ai_utils.py – AI-powered helpers using Mistral API
+ai_utils.py – Mistral AI integration using `requests` (no SDK)
 """
 
 import streamlit as st
-from mistralai import Mistral
+import requests
+import time
 
 
-# ----------------------------------------------------------------------
-# Initialize Mistral client (cached)
-# ----------------------------------------------------------------------
-@st.cache_resource
-def get_mistral_client():
-    """Return a Mistral client instance using the API key from secrets."""
+def call_mistral(prompt, max_tokens=300, retries=2):
+    """
+    Send a prompt to Mistral's API using direct HTTP requests.
+    Returns the generated text or an error message.
+    """
     api_key = st.secrets.get("MISTRAL_API_KEY")
     if not api_key:
-        st.warning("Mistral API key not set. AI features will be disabled.")
-        return None
-    return Mistral(api_key=api_key)
+        return "⚠️ AI features unavailable. Please add your Mistral API key in Streamlit secrets."
 
-
-# ----------------------------------------------------------------------
-# Core API call with error handling and basic retry
-# ----------------------------------------------------------------------
-def call_mistral(prompt, model="mistral-small-latest", max_tokens=300, retries=2):
-    """
-    Send a prompt to Mistral and return the generated text.
-    Uses a small model by default to stay within free tier limits.
-    """
-    client = get_mistral_client()
-    if not client:
-        return "⚠️ AI features unavailable – please add your Mistral API key in Streamlit secrets."
+    url = "https://api.mistral.ai/v1/chat/completions"
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
+    }
+    data = {
+        "model": "mistral-small-latest",
+        "messages": [{"role": "user", "content": prompt}],
+        "max_tokens": max_tokens,
+        "temperature": 0.7
+    }
 
     for attempt in range(retries):
         try:
-            response = client.chat.complete(
-                model=model,
-                messages=[{"role": "user", "content": prompt}],
-                max_tokens=max_tokens,
-                temperature=0.7,
-            )
-            return response.choices[0].message.content.strip()
-        except Exception as e:
-            if "rate_limit" in str(e).lower() and attempt < retries - 1:
-                import time
-                time.sleep(2 ** attempt)   # exponential backoff
+            response = requests.post(url, json=data, headers=headers, timeout=30)
+            if response.status_code == 200:
+                return response.json()["choices"][0]["message"]["content"].strip()
+            else:
+                error_msg = response.json().get("error", {}).get("message", str(response.status_code))
+                return f"⚠️ API Error: {error_msg}"
+        except requests.exceptions.Timeout:
+            if attempt < retries - 1:
+                time.sleep(2 ** attempt)
                 continue
+            return "⚠️ Request timed out. Please try again."
+        except Exception as e:
             return f"⚠️ Error: {str(e)}"
-    return "⚠️ Rate limit exceeded. Please try again later."
+    return "⚠️ Max retries exceeded. Please try again later."
 
 
-# ----------------------------------------------------------------------
-# Document improvement functions
-# ----------------------------------------------------------------------
 def ai_suggest_improvements(section, content):
-    """
-    Suggest specific improvements for a given section of a resume or other document.
-    section: e.g., "job description", "professional summary"
-    content: the current text
-    """
+    """Suggest improvements for a specific resume section."""
     if not content or len(content) < 10:
         return "Please enter more text to get useful suggestions."
-
     prompt = f"""I have a {section} section in my resume. Suggest specific improvements to make it more impactful, professional, and ATS-friendly.
 
 Current content:
@@ -72,9 +61,7 @@ Provide your suggestions as a numbered list of bullet points. Keep each suggesti
 
 
 def ai_generate_summary(name, title, skills, experience):
-    """
-    Generate a 3‑4 sentence professional summary based on user data.
-    """
+    """Generate a 3‑4 sentence professional summary."""
     prompt = f"""Write a compelling professional summary for a {title} named {name}.
 Skills: {skills}
 Relevant experience: {experience}
@@ -85,9 +72,7 @@ Keep it to 3‑4 sentences, using a confident and professional tone. Do not use 
 
 
 def ai_generate_cover_letter(name, job_title, company, skills, experience):
-    """
-    Generate a full cover letter for a job application.
-    """
+    """Generate a full cover letter."""
     prompt = f"""Write a professional cover letter for {name} applying for the position of {job_title} at {company}.
 Skills: {skills}
 Relevant experience: {experience}
@@ -103,23 +88,14 @@ Keep the tone formal yet warm, and keep it to 3 short paragraphs.
 
 
 def ai_autofill_skills(job_title):
-    """
-    Suggest a comma‑separated list of top skills for a given job title.
-    """
+    """Suggest a comma‑separated list of top skills for a job title."""
     prompt = f"List the top 8 skills for a {job_title} separated by commas. Only list the skills, no extra text."
     return call_mistral(prompt, max_tokens=100)
 
 
 def ai_improve_text(text, context=""):
-    """
-    Generic text improver – used for user‑provided custom text.
-    """
+    """Generic text improver."""
     if not text or len(text) < 10:
         return "Please enter more text to improve."
     prompt = f"Improve the following {context} to be more professional, impactful, and concise:\n\n{text}"
     return call_mistral(prompt, max_tokens=300)
-    try:
-    from mistralai import Mistral
-except ImportError:
-    Mistral = None
-    st.warning("Mistral package not installed. AI features disabled.")
