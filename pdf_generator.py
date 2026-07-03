@@ -42,7 +42,7 @@ def _style(name, font="Helvetica", size=10, color="#111111", leading=None, align
         spaceAfter=sa,
     )
 
-# ── RESUME GENERATOR (includes ALL sections) ──────────────────────────────
+# ── RESUME GENERATOR (SIMPLIFIED HEADER) ──────────────────────────────────
 def generate_resume_pdf(data):
     buf = io.BytesIO()
     theme = THEMES.get(data.get("theme", "Classic Green"), THEMES["Classic Green"])
@@ -58,7 +58,7 @@ def generate_resume_pdf(data):
 
     story = []
 
-    # ── Header ──
+    # ── HEADER (Simplified – no table, just paragraphs with background) ──
     name = data.get("name", "Your Name").strip() or "Your Name"
     title = data.get("title", "").strip()
     email = data.get("email", "").strip()
@@ -69,12 +69,19 @@ def generate_resume_pdf(data):
     contact_parts = [p for p in [email, phone, location, linkedin] if p]
     contact = " · ".join(contact_parts)
 
-    hdr_data = [[Paragraph(name, _style("Name", "Helvetica-Bold", 22, colors.white, 28))]]
+    # Use a paragraph with background color – we'll wrap in a table just for background
+    # Actually, we can use a Table with one row and set background.
+    # But simpler: use a Table with cells that have background.
+    # I'll use a Table with a single row and cell background, but simpler: use a Paragraph with a Frame? No, Table is fine.
+    # Let's use a Table with one column and multiple rows.
+    hdr_data = []
+    hdr_data.append([Paragraph(name, _style("Name", "Helvetica-Bold", 22, colors.white, 28, align=TA_CENTER))])
     if title:
-        hdr_data.append([Paragraph(title, _style("Title", size=12, color=colors.white, leading=16))])
+        hdr_data.append([Paragraph(title, _style("Title", size=12, color=colors.white, leading=16, align=TA_CENTER))])
     if contact:
-        hdr_data.append([Paragraph(contact, _style("Contact", size=8.5, color=colors.white, leading=12))])
+        hdr_data.append([Paragraph(contact, _style("Contact", size=9, color=colors.white, leading=12, align=TA_CENTER))])
 
+    # Create the table with one column
     hdr = Table(hdr_data, colWidths=[BODY_W])
     hdr.setStyle(TableStyle([
         ("BACKGROUND", (0,0), (-1,-1), PRIMARY),
@@ -82,6 +89,7 @@ def generate_resume_pdf(data):
         ("BOTTOMPADDING", (0,0), (-1,-1), 10),
         ("LEFTPADDING", (0,0), (-1,-1), 16),
         ("RIGHTPADDING", (0,0), (-1,-1), 16),
+        ("ALIGN", (0,0), (-1,-1), "CENTER"),
     ]))
     story.append(hdr)
     story.append(Spacer(1, 6*mm))
@@ -218,24 +226,18 @@ def generate_resume_pdf(data):
     doc.build(story)
     return buf.getvalue()
 
-# ── CV GENERATOR (simplified – reuses resume but adds publications) ─────────
+# ── CV GENERATOR ──────────────────────────────────────────────────────────
 def generate_cv_pdf(data):
-    # Use the resume generator as a base and add extra fields
-    # We'll just call resume for now – can be extended later
     return generate_resume_pdf(data)
 
-# ── COVER LETTER GENERATOR ────────────────────────────────────────────────────
+# ── COVER LETTER GENERATOR ──────────────────────────────────────────────
 def generate_cover_letter_pdf(data):
     buf = io.BytesIO()
     theme = THEMES.get(data.get("theme", "Classic Green"), THEMES["Classic Green"])
     PRIMARY = _hex(theme["primary"])
     DARK = _hex(theme["dark"])
 
-    doc = SimpleDocTemplate(
-        buf, pagesize=A4,
-        leftMargin=LM, rightMargin=RM,
-        topMargin=TM, bottomMargin=BM,
-    )
+    doc = SimpleDocTemplate(buf, pagesize=A4, leftMargin=LM, rightMargin=RM, topMargin=TM, bottomMargin=BM)
     story = []
 
     name = data.get("name", "Your Name").strip() or "Your Name"
@@ -243,7 +245,6 @@ def generate_cover_letter_pdf(data):
     phone = data.get("phone", "").strip()
     location = data.get("location", "").strip()
 
-    # Sender info
     story.append(Paragraph(name, _style("Name", "Helvetica-Bold", 16, DARK, 20)))
     if email or phone:
         story.append(Paragraph(" | ".join(filter(None, [email, phone])), _style("Contact", size=9, color="#666666", leading=12)))
@@ -251,11 +252,9 @@ def generate_cover_letter_pdf(data):
         story.append(Paragraph(location, _style("Contact", size=9, color="#666666", leading=12)))
     story.append(Spacer(1, 8*mm))
 
-    # Date
     story.append(Paragraph(datetime.now().strftime("%B %d, %Y"), _style("Date", size=9.5, color="#333333", align=TA_RIGHT, sa=6)))
     story.append(Spacer(1, 3*mm))
 
-    # Recipient
     company = data.get("cover_company", "Company Name").strip()
     position = data.get("cover_position", "Position").strip()
     recruiter = data.get("cover_recruiter", "").strip()
@@ -266,11 +265,9 @@ def generate_cover_letter_pdf(data):
         story.append(Paragraph(f"Re: Application for {position}", _style("Subject", size=10, color="#333333", leading=14, sa=6)))
     story.append(Spacer(1, 3*mm))
 
-    # Body
     salutation = f"Dear {recruiter if recruiter else 'Hiring Manager'}," if recruiter else "Dear Hiring Manager,"
     story.append(Paragraph(salutation, _style("Body", size=10, color="#333333", leading=16, sa=4)))
 
-    # Opening
     opening = data.get("cover_custom", "").strip()
     if opening:
         story.append(Paragraph(opening, _style("Body", size=10, color="#333333", leading=16, sa=6)))
@@ -280,7 +277,6 @@ def generate_cover_letter_pdf(data):
                        f"I am confident I would be a valuable addition to your team."
         story.append(Paragraph(opening_text, _style("Body", size=10, color="#333333", leading=16, sa=6)))
 
-    # Closing
     closing = "I would welcome the opportunity to discuss how my experience can contribute to your success. " \
               "Thank you for your time and consideration."
     story.append(Paragraph(closing, _style("Body", size=10, color="#333333", leading=16, sa=6)))
@@ -291,7 +287,7 @@ def generate_cover_letter_pdf(data):
     doc.build(story)
     return buf.getvalue()
 
-# ── PROPOSAL GENERATOR ──────────────────────────────────────────────────────
+# ── PROPOSAL GENERATOR ──────────────────────────────────────────────────
 def generate_proposal_pdf(data):
     buf = io.BytesIO()
     theme = THEMES.get(data.get("theme", "Classic Green"), THEMES["Classic Green"])
@@ -337,7 +333,7 @@ def generate_proposal_pdf(data):
     doc.build(story)
     return buf.getvalue()
 
-# ── EXPERIENCE LETTER GENERATOR ─────────────────────────────────────────────
+# ── EXPERIENCE LETTER GENERATOR ──────────────────────────────────────────
 def generate_experience_letter_pdf(data):
     buf = io.BytesIO()
     theme = THEMES.get(data.get("theme", "Classic Green"), THEMES["Classic Green"])
