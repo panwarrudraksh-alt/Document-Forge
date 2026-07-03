@@ -21,7 +21,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ---- Custom CSS (only background colors darkened) ----
+# ---- Custom CSS (same as before, with darker background) ----
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
@@ -37,7 +37,6 @@ st.markdown("""
     }
 
     :root {
-        /* Light theme – slightly darker background */
         --bg-start: #d0d8e0;
         --bg-end: #c0ccd8;
         --text-color: #102a43;
@@ -92,7 +91,7 @@ st.markdown("""
         padding: 0;
     }
 
-    /* ---- All other styles stay exactly the same ---- */
+    /* ---- All other styles (unchanged) ---- */
     section[data-testid="stSidebar"] {
         background: var(--card-bg);
         backdrop-filter: blur(12px);
@@ -434,6 +433,19 @@ def go_to_page(page_name):
     st.session_state.page = page_name
     st.rerun()
 
+# ---- Safe AI response helper ----
+def safe_ai_response(response, fallback=None):
+    """Validate AI response and return it if valid, else return fallback."""
+    if response is None:
+        return fallback
+    if not isinstance(response, str):
+        return fallback
+    # Check for error indicators
+    error_indicators = ["error", "failed", "⚠️", "unavailable", "timeout", "rate limit"]
+    if any(indicator in response.lower() for indicator in error_indicators):
+        return fallback
+    return response
+
 # ---- Sidebar Navigation ----
 with st.sidebar:
     st.markdown("""
@@ -506,6 +518,7 @@ def get_user_data():
 # ==================== PAGES ====================
 
 if page == "Home":
+    # ---- Home page (unchanged) ----
     st.markdown("""
     <div class="hero">
         <h1>Create <span>Professional Documents</span><br>Instantly</h1>
@@ -518,11 +531,9 @@ if page == "Home":
     </div>
     """, unsafe_allow_html=True)
 
-    # Hidden button for "Get Started Free"
     if st.button("Get Started Free (hidden)", key="home_get_started", use_container_width=False, type="primary"):
         go_to_page("Builder")
 
-    # About Me
     st.markdown("""
     <div class="about-section" id="about">
         <div class="text">
@@ -538,7 +549,6 @@ if page == "Home":
     </div>
     """, unsafe_allow_html=True)
 
-    # Features – clickable cards
     st.markdown("""
     <div class="section-header">
         <span class="badge">Features</span>
@@ -571,7 +581,6 @@ if page == "Home":
 
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # CTA
     st.markdown("""
     <div class="cta-section">
         <h2>Ready to Build Your Document?</h2>
@@ -587,7 +596,7 @@ if page == "Home":
     </div>
     """, unsafe_allow_html=True)
 
-    # ---- SUPPORT SECTION with QR code ----
+    # Support section
     st.markdown("""
     <div class="support-section" id="support-section">
         <h2>❤️ Support the Developer</h2>
@@ -599,7 +608,6 @@ if page == "Home":
     </div>
     """, unsafe_allow_html=True)
 
-    # ---- QR Code – try multiple paths ----
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         possible_paths = [
@@ -610,20 +618,17 @@ if page == "Home":
             "api_qr.png",
             "static/api_qr.png",
         ]
-        
         found = False
         for path in possible_paths:
             if os.path.exists(path):
                 st.image(path, caption="Scan to support", use_container_width=True)
                 found = True
                 break
-        
         if not found:
             st.error("""
             **QR Code not found.**  
             Please ensure the file is named `api_qr.jpeg` and placed in the **root folder** of your repository (same level as `app.py`).
             """)
-        
         st.markdown("""
         <div style="text-align: center; padding-bottom: 2rem;">
             <p style="color: var(--text-light); font-size: 0.95rem;">
@@ -663,16 +668,23 @@ elif page == "Builder":
             st.text_input("Role", key="f_exp_role", placeholder="Senior Developer")
         with col2:
             st.text_input("Duration", key="f_duration", placeholder="Jan 2020 – Present")
-        st.text_area("Job Description", key="f_exp_desc", placeholder="• Built REST APIs serving 10k users/day\n• Led team of 5 developers", height=120)
+        
+        # ---- JOB DESCRIPTION with AI Improve (fixed) ----
+        st.text_area("Job Description", key="f_exp_desc", 
+            placeholder="• Built REST APIs serving 10k users/day\n• Led team of 5 developers", height=120)
         col_ai1, col_ai2 = st.columns([4, 1])
         with col_ai2:
             if st.button("✨ Improve", key="improve_exp"):
-                improved = ai_suggest_improvements("job description", st.session_state.f_exp_desc)
-                if improved and "Error" not in improved:
-                    st.session_state.f_exp_desc = improved
-                    st.rerun()
-                else:
-                    st.warning("AI suggestion failed. Please try again.")
+                try:
+                    improved = ai_suggest_improvements("job description", st.session_state.f_exp_desc)
+                    valid = safe_ai_response(improved)
+                    if valid is not None:
+                        st.session_state.f_exp_desc = valid
+                        st.rerun()
+                    else:
+                        st.warning("AI suggestion returned an error. Please try again or check your API key.")
+                except Exception as e:
+                    st.error(f"An error occurred: {str(e)}")
 
     with tabs[2]:
         col1, col2, col3 = st.columns(3)
@@ -696,15 +708,19 @@ elif page == "Builder":
 
         job_title_for_skills = st.text_input("Job Title for Skill Suggestions", placeholder="e.g., Data Scientist")
         if st.button("🤖 Suggest Skills") and job_title_for_skills:
-            suggested = ai_autofill_skills(job_title_for_skills)
-            if suggested and "Error" not in suggested:
-                skills_list = [s.strip().lower() for s in suggested.split(',') if s.strip()]
-                for sk in skills_list:
-                    if sk not in st.session_state.skills:
-                        st.session_state.skills.append(sk)
-                st.rerun()
-            else:
-                st.warning("Could not get skill suggestions. Please try again.")
+            try:
+                suggested = ai_autofill_skills(job_title_for_skills)
+                valid = safe_ai_response(suggested)
+                if valid is not None:
+                    skills_list = [s.strip().lower() for s in valid.split(',') if s.strip()]
+                    for sk in skills_list:
+                        if sk not in st.session_state.skills:
+                            st.session_state.skills.append(sk)
+                    st.rerun()
+                else:
+                    st.warning("Could not get skill suggestions. Please try again.")
+            except Exception as e:
+                st.error(f"An error occurred: {str(e)}")
 
         if st.session_state.skills:
             st.markdown("**Your Skills:**")
@@ -724,12 +740,16 @@ elif page == "Builder":
         col_ai1, col_ai2 = st.columns([4, 1])
         with col_ai2:
             if st.button("✨ Improve", key="improve_summary"):
-                improved = ai_suggest_improvements("professional summary", st.session_state.f_summary)
-                if improved and "Error" not in improved:
-                    st.session_state.f_summary = improved
-                    st.rerun()
-                else:
-                    st.warning("AI suggestion failed. Please try again.")
+                try:
+                    improved = ai_suggest_improvements("professional summary", st.session_state.f_summary)
+                    valid = safe_ai_response(improved)
+                    if valid is not None:
+                        st.session_state.f_summary = valid
+                        st.rerun()
+                    else:
+                        st.warning("AI suggestion returned an error. Please try again or check your API key.")
+                except Exception as e:
+                    st.error(f"An error occurred: {str(e)}")
 
     if st.button("💾 Save Information", type="primary", use_container_width=True):
         st.success("✅ All information saved!")
@@ -1007,8 +1027,12 @@ elif page == "AIAssistant":
         if st.button("Improve Text"):
             if text_to_improve:
                 improved = ai_suggest_improvements("text", text_to_improve)
-                st.markdown("### Improved Version")
-                st.write(improved)
+                valid = safe_ai_response(improved)
+                if valid is not None:
+                    st.markdown("### Improved Version")
+                    st.write(valid)
+                else:
+                    st.warning("AI suggestion returned an error. Please try again.")
             else:
                 st.warning("Please enter some text.")
 
@@ -1019,27 +1043,35 @@ elif page == "AIAssistant":
             name = st.session_state.get("f_name", "Candidate")
             title = st.session_state.get("f_title", "Professional")
             summary = ai_generate_summary(name, title, skills, experience)
-            st.markdown("### Generated Summary")
-            st.write(summary)
-            if st.button("Use This Summary"):
-                st.session_state.f_summary = summary
-                st.rerun()
+            valid = safe_ai_response(summary)
+            if valid is not None:
+                st.markdown("### Generated Summary")
+                st.write(valid)
+                if st.button("Use This Summary"):
+                    st.session_state.f_summary = valid
+                    st.rerun()
+            else:
+                st.warning("Could not generate summary. Please try again.")
 
     with tab_ai[2]:
         job_title = st.text_input("Job Title", placeholder="e.g., Data Scientist")
         if st.button("Suggest Skills"):
             if job_title:
                 skills = ai_autofill_skills(job_title)
-                st.markdown("### Suggested Skills")
-                for sk in skills.split(','):
-                    if sk.strip():
-                        st.write(f"• {sk.strip()}")
-                if st.button("Add All to My Skills"):
-                    for sk in skills.split(','):
-                        s = sk.strip().lower()
-                        if s and s not in st.session_state.skills:
-                            st.session_state.skills.append(s)
-                    st.rerun()
+                valid = safe_ai_response(skills)
+                if valid is not None:
+                    st.markdown("### Suggested Skills")
+                    for sk in valid.split(','):
+                        if sk.strip():
+                            st.write(f"• {sk.strip()}")
+                    if st.button("Add All to My Skills"):
+                        for sk in valid.split(','):
+                            s = sk.strip().lower()
+                            if s and s not in st.session_state.skills:
+                                st.session_state.skills.append(s)
+                        st.rerun()
+                else:
+                    st.warning("Could not get skill suggestions. Please try again.")
             else:
                 st.warning("Enter a job title.")
 
@@ -1056,11 +1088,15 @@ elif page == "AIAssistant":
                 experience = st.session_state.get("f_exp_desc", "")
                 name = st.session_state.get("f_name", "Candidate")
                 letter = ai_generate_cover_letter(name, position, company, skills, experience)
-                st.markdown("### Generated Cover Letter")
-                st.write(letter)
-                if st.button("Use This Cover Letter"):
-                    st.session_state.cover_letter_ai = letter
-                    st.info("Cover letter saved. Go to Cover Letter page to use it.")
+                valid = safe_ai_response(letter)
+                if valid is not None:
+                    st.markdown("### Generated Cover Letter")
+                    st.write(valid)
+                    if st.button("Use This Cover Letter"):
+                        st.session_state.cover_letter_ai = valid
+                        st.info("Cover letter saved. Go to Cover Letter page to use it.")
+                else:
+                    st.warning("Could not generate cover letter. Please try again.")
             else:
                 st.warning("Please fill in company and position.")
 
