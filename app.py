@@ -21,7 +21,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ---- Custom CSS (same as before, with darker background) ----
+# ---- Custom CSS (same as before) ----
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
@@ -91,7 +91,6 @@ st.markdown("""
         padding: 0;
     }
 
-    /* ---- All other styles (unchanged) ---- */
     section[data-testid="stSidebar"] {
         background: var(--card-bg);
         backdrop-filter: blur(12px);
@@ -427,6 +426,11 @@ if "chat_input" not in st.session_state:
     st.session_state.chat_input = ""
 if "page" not in st.session_state:
     st.session_state.page = "Home"
+# Pending improvements
+if "pending_improve_exp" not in st.session_state:
+    st.session_state.pending_improve_exp = None
+if "pending_improve_summary" not in st.session_state:
+    st.session_state.pending_improve_summary = None
 
 # ---- Page navigation helper ----
 def go_to_page(page_name):
@@ -435,12 +439,10 @@ def go_to_page(page_name):
 
 # ---- Safe AI response helper ----
 def safe_ai_response(response, fallback=None):
-    """Validate AI response and return it if valid, else return fallback."""
     if response is None:
         return fallback
     if not isinstance(response, str):
         return fallback
-    # Check for error indicators
     error_indicators = ["error", "failed", "⚠️", "unavailable", "timeout", "rate limit"]
     if any(indicator in response.lower() for indicator in error_indicators):
         return fallback
@@ -648,6 +650,15 @@ elif page == "Builder":
     </div>
     """, unsafe_allow_html=True)
 
+    # ---- Apply pending improvements before rendering widgets ----
+    if st.session_state.pending_improve_exp is not None:
+        st.session_state.f_exp_desc = st.session_state.pending_improve_exp
+        st.session_state.pending_improve_exp = None
+
+    if st.session_state.pending_improve_summary is not None:
+        st.session_state.f_summary = st.session_state.pending_improve_summary
+        st.session_state.pending_improve_summary = None
+
     tabs = st.tabs(["👤 Personal", "💼 Experience", "🎓 Education", "🛠️ Skills", "📝 Extra"])
 
     with tabs[0]:
@@ -669,7 +680,7 @@ elif page == "Builder":
         with col2:
             st.text_input("Duration", key="f_duration", placeholder="Jan 2020 – Present")
         
-        # ---- JOB DESCRIPTION with AI Improve (fixed) ----
+        # ---- JOB DESCRIPTION with AI Improve ----
         st.text_area("Job Description", key="f_exp_desc", 
             placeholder="• Built REST APIs serving 10k users/day\n• Led team of 5 developers", height=120)
         col_ai1, col_ai2 = st.columns([4, 1])
@@ -679,7 +690,7 @@ elif page == "Builder":
                     improved = ai_suggest_improvements("job description", st.session_state.f_exp_desc)
                     valid = safe_ai_response(improved)
                     if valid is not None:
-                        st.session_state.f_exp_desc = valid
+                        st.session_state.pending_improve_exp = valid
                         st.rerun()
                     else:
                         st.warning("AI suggestion returned an error. Please try again or check your API key.")
@@ -744,7 +755,7 @@ elif page == "Builder":
                     improved = ai_suggest_improvements("professional summary", st.session_state.f_summary)
                     valid = safe_ai_response(improved)
                     if valid is not None:
-                        st.session_state.f_summary = valid
+                        st.session_state.pending_improve_summary = valid
                         st.rerun()
                     else:
                         st.warning("AI suggestion returned an error. Please try again or check your API key.")
@@ -754,7 +765,7 @@ elif page == "Builder":
     if st.button("💾 Save Information", type="primary", use_container_width=True):
         st.success("✅ All information saved!")
 
-# ---- RESUME ----
+# ---- RESUME (unchanged) ----
 elif page == "Resume":
     st.markdown("""
     <div class="doc-page">
@@ -789,7 +800,7 @@ elif page == "Resume":
         else:
             st.error("Failed to generate PDF. Check logs.")
 
-# ---- CV ----
+# ---- CV (unchanged) ----
 elif page == "CV":
     st.markdown("""
     <div class="doc-page">
@@ -824,7 +835,7 @@ elif page == "CV":
         else:
             st.error("Failed to generate PDF.")
 
-# ---- COVER LETTER ----
+# ---- COVER LETTER (unchanged) ----
 elif page == "CoverLetter":
     st.markdown("""
     <div class="doc-page">
@@ -868,7 +879,7 @@ elif page == "CoverLetter":
         else:
             st.error("Failed to generate PDF.")
 
-# ---- PROPOSAL ----
+# ---- PROPOSAL (unchanged) ----
 elif page == "Proposal":
     st.markdown("""
     <div class="doc-page">
@@ -916,7 +927,7 @@ elif page == "Proposal":
         else:
             st.error("Failed to generate PDF.")
 
-# ---- EXPERIENCE LETTER ----
+# ---- EXPERIENCE LETTER (unchanged) ----
 elif page == "Experience":
     st.markdown("""
     <div class="doc-page">
@@ -967,7 +978,7 @@ elif page == "Experience":
         else:
             st.error("Failed to generate PDF.")
 
-# ---- JOB SCRAPER ----
+# ---- JOB SCRAPER (unchanged) ----
 elif page == "JobScraper":
     st.markdown("""
     <div class="doc-page">
@@ -1009,7 +1020,7 @@ elif page == "JobScraper":
     else:
         st.info("No jobs found. Click 'Scrape Jobs' to search.")
 
-# ---- AI ASSISTANT ----
+# ---- AI ASSISTANT (unchanged) ----
 elif page == "AIAssistant":
     st.markdown("""
     <div class="doc-page">
