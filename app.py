@@ -1,251 +1,1180 @@
-"""
-pdf_generator.py – ResumeForge Pro
-Uses canvas for reliable header background.
-"""
-
-import io
+import streamlit as st
 from datetime import datetime
-from reportlab.lib.pagesizes import A4
-from reportlab.lib import colors
-from reportlab.lib.units import mm
-from reportlab.platypus import (
-    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Flowable
+import time
+import os
+from pdf_generator import (
+    generate_resume_pdf,
+    generate_cv_pdf,
+    generate_cover_letter_pdf,
+    generate_proposal_pdf,
+    generate_experience_letter_pdf
 )
-from reportlab.lib.styles import ParagraphStyle
-from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT
-from reportlab.pdfgen import canvas
+from job_scraper import get_jobs
+from ai_utils import ai_suggest_improvements, ai_autofill_skills, ai_generate_summary, ai_generate_cover_letter
+from chat_utils import chat_with_ai
 
-# ── Themes ────────────────────────────────────────────────────────────────────
-THEMES = {
-    "Classic Green": {"primary": "#1D9E75", "light": "#E1F5EE", "dark": "#085041"},
-    "Corporate Blue": {"primary": "#185FA5", "light": "#E6F1FB", "dark": "#042C53"},
-    "Creative Purple": {"primary": "#533AB7", "light": "#EEEDFE", "dark": "#26215C"},
-}
+# ---- Page Config ----
+st.set_page_config(
+    page_title="DocForge – Professional Document Builder",
+    page_icon="📄",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
-def _hex(h):
-    h = h.lstrip("#")
-    return colors.Color(int(h[0:2],16)/255, int(h[2:4],16)/255, int(h[4:6],16)/255)
+# ---- Custom CSS (same as before) ----
+st.markdown("""
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
-PAGE_W, PAGE_H = A4
-LM, RM, TM, BM = 15*mm, 15*mm, 10*mm, 15*mm
-BODY_W = PAGE_W - LM - RM
+    * {
+        font-family: 'Inter', sans-serif;
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+    html {
+        scroll-behavior: smooth;
+    }
 
-def _style(name, font="Helvetica", size=10, color="#111111", leading=None, align=TA_LEFT, sb=0, sa=0):
-    return ParagraphStyle(
-        name,
-        fontName=font,
-        fontSize=size,
-        textColor=_hex(color) if isinstance(color, str) else color,
-        leading=leading or size * 1.4,
-        alignment=align,
-        spaceBefore=sb,
-        spaceAfter=sa,
+    :root {
+        --bg-start: #d0d8e0;
+        --bg-end: #c0ccd8;
+        --text-color: #102a43;
+        --text-light: #3d5a78;
+        --card-bg: rgba(255,255,255,0.88);
+        --card-border: rgba(51,163,220,0.25);
+        --input-bg: #ffffff;
+        --input-border: #b0c4de;
+        --tab-bg: #e1e8f0;
+        --tab-selected: #1e6f9f;
+        --header-bg: linear-gradient(135deg, #0b2b44, #1e6f9f);
+        --header-text: #ffffff;
+        --header-subtext: #d9e2ec;
+        --btn-bg: linear-gradient(135deg, #1e6f9f, #33a3dc);
+        --btn-text: #ffffff;
+        --shadow-color: rgba(11,43,68,0.2);
+        --primary: #1e6f9f;
+        --primary-light: #33a3dc;
+        --primary-dark: #0b2b44;
+        --section-bg: #f0f4f8;
+        --support-bg: #d0d8e0;
+    }
+
+    [data-theme="dark"] {
+        --bg-start: #0b1a2a;
+        --bg-end: #1a2a3a;
+        --text-color: #f0f4f8;
+        --text-light: #b0c4de;
+        --card-bg: rgba(20,35,50,0.88);
+        --card-border: rgba(51,163,220,0.25);
+        --input-bg: #1a2a3a;
+        --input-border: #2a4a6a;
+        --tab-bg: #1a2a3a;
+        --tab-selected: #33a3dc;
+        --header-bg: linear-gradient(135deg, #0b2b44, #1e6f9f);
+        --header-text: #ffffff;
+        --header-subtext: #b0c4de;
+        --btn-bg: linear-gradient(135deg, #1e6f9f, #33a3dc);
+        --btn-text: #ffffff;
+        --shadow-color: rgba(0,0,0,0.4);
+        --primary: #33a3dc;
+        --primary-light: #66c2e8;
+        --primary-dark: #1a4a6a;
+        --section-bg: #1a2a3a;
+        --support-bg: #0b1a2a;
+    }
+
+    .stApp {
+        background:
+            radial-gradient(circle at top left, rgba(51,163,220,0.08), transparent 40%),
+            linear-gradient(135deg, var(--bg-start), var(--bg-end));
+        padding: 0;
+    }
+
+    section[data-testid="stSidebar"] {
+        background: var(--card-bg);
+        backdrop-filter: blur(12px);
+        border-right: 1px solid var(--card-border);
+    }
+    section[data-testid="stSidebar"] * {
+        color: var(--text-color) !important;
+    }
+    section[data-testid="stSidebar"] .stRadio label {
+        color: var(--text-light) !important;
+        font-weight: 500;
+        padding: 0.3rem 0.8rem;
+        border-radius: 8px;
+        transition: background 0.2s;
+    }
+    section[data-testid="stSidebar"] .stRadio label:hover {
+        background: var(--card-border);
+    }
+    section[data-testid="stSidebar"] .stRadio label[data-selected="true"] {
+        background: var(--primary);
+        color: white !important;
+        font-weight: 600;
+    }
+    section[data-testid="stSidebar"] .stMetric {
+        background: rgba(255,255,255,0.3);
+        border-radius: 12px;
+        padding: 0.5rem;
+        border: 1px solid var(--card-border);
+    }
+    section[data-testid="stSidebar"] .stMetric label {
+        color: var(--text-light) !important;
+    }
+    section[data-testid="stSidebar"] .stMetric .stMetricValue {
+        color: var(--text-color) !important;
+        font-weight: 600;
+    }
+
+    .hero { text-align: center; padding: 3rem 1rem; animation: fadeInUp 0.8s ease; }
+    .hero h1 { font-size: 2.8rem; font-weight: 900; color: var(--text-color); }
+    .hero h1 span { background: linear-gradient(135deg, var(--primary), var(--primary-light)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .hero p { font-size: 1.2rem; color: var(--text-light); max-width: 700px; margin: 0 auto 2rem; }
+    .hero .buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+    .hero .buttons .btn-primary {
+        background: var(--btn-bg); color: var(--btn-text); padding: 0.8rem 2rem; border-radius: 12px; font-weight: 600; border: none; box-shadow: 0 10px 25px var(--shadow-color); transition: all 0.3s; text-decoration: none; display: inline-block;
+    }
+    .hero .buttons .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 18px 35px var(--shadow-color); }
+    .hero .buttons .btn-secondary {
+        background: transparent; color: var(--text-color); padding: 0.8rem 2rem; border-radius: 12px; font-weight: 600; border: 1px solid var(--card-border); transition: all 0.3s; text-decoration: none; display: inline-block;
+    }
+    .hero .buttons .btn-secondary:hover { background: var(--card-bg); border-color: var(--primary); }
+    .hero .buttons .btn-support {
+        background: #f43f5e; color: white; padding: 0.8rem 2rem; border-radius: 12px; font-weight: 600; border: none; box-shadow: 0 10px 25px rgba(244,63,94,0.3); transition: all 0.3s; text-decoration: none; display: inline-block;
+    }
+    .hero .buttons .btn-support:hover { transform: translateY(-3px); box-shadow: 0 18px 35px rgba(244,63,94,0.4); background: #e11d48; }
+
+    .about-section {
+        background: var(--card-bg);
+        backdrop-filter: blur(8px);
+        border-radius: 24px;
+        padding: 2.5rem;
+        margin: 3rem 0;
+        border: 1px solid var(--card-border);
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        flex-wrap: wrap;
+        scroll-margin-top: 80px;
+    }
+    .about-section .text { flex: 1; }
+    .about-section .text h2 { color: var(--text-color); font-weight: 800; font-size: 2rem; margin-top: 0; }
+    .about-section .text p { color: var(--text-light); font-size: 1.05rem; line-height: 1.7; margin: 0.5rem 0; }
+    .about-section .avatar {
+        width: 120px;
+        height: 120px;
+        background: var(--primary);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        font-weight: 700;
+        box-shadow: 0 10px 30px var(--shadow-color);
+        flex-shrink: 0;
+    }
+    @media (max-width: 768px) {
+        .about-section { flex-direction: column; text-align: center; }
+        .about-section .avatar { width: 100px; height: 100px; font-size: 2.5rem; }
+    }
+
+    .feature-card-btn {
+        display: block;
+        width: 100%;
+        background: var(--card-bg);
+        backdrop-filter: blur(8px);
+        border: 1px solid var(--card-border);
+        border-radius: 24px;
+        padding: 2rem 1.5rem;
+        text-align: center;
+        transition: all 0.3s;
+        cursor: pointer;
+        font-family: inherit;
+        color: var(--text-color);
+        font-size: 1rem;
+        line-height: 1.5;
+        box-shadow: none;
+    }
+    .feature-card-btn:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px var(--shadow-color);
+        border-color: var(--primary);
+    }
+    .feature-card-btn .icon {
+        font-size: 2.8rem;
+        display: block;
+        margin-bottom: 0.5rem;
+    }
+    .feature-card-btn h3 {
+        font-weight: 700;
+        font-size: 1.3rem;
+        margin: 0.5rem 0 0.25rem;
+    }
+    .feature-card-btn p {
+        color: var(--text-light);
+        font-size: 0.95rem;
+        margin: 0;
+    }
+    .feature-card-btn:active {
+        transform: scale(0.98);
+    }
+
+    .section-header { text-align: center; margin: 3rem 0 2rem; }
+    .section-header .badge { display: inline-block; background: var(--card-border); color: var(--primary); padding: 0.2rem 1rem; border-radius: 30px; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+    .section-header h2 { font-size: 2.5rem; font-weight: 800; color: var(--text-color); margin-top: 0.5rem; }
+    .section-header p { color: var(--text-light); max-width: 600px; margin: 0.5rem auto 0; }
+
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        margin: 2rem 0;
+    }
+
+    .cta-section {
+        background: var(--header-bg);
+        border-radius: 32px;
+        padding: 3rem 2rem;
+        text-align: center;
+        color: white;
+        margin: 3rem 0;
+        box-shadow: 0 20px 50px var(--shadow-color);
+    }
+    .cta-section h2 { font-size: 2.5rem; font-weight: 800; }
+    .cta-section p { opacity: 0.9; max-width: 600px; margin: 0.5rem auto 1.5rem; }
+
+    button[data-testid="baseButton-cta_start_building"] {
+        background: white !important;
+        color: var(--primary-dark) !important;
+        border: none !important;
+        border-radius: 12px !important;
+        padding: 0.8rem 2.5rem !important;
+        font-weight: 700 !important;
+        font-size: 1rem !important;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2) !important;
+        transition: all 0.3s !important;
+        width: auto !important;
+        display: inline-block !important;
+    }
+    button[data-testid="baseButton-cta_start_building"]:hover {
+        transform: scale(1.03) !important;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.3) !important;
+        background: #f8f9fa !important;
+    }
+
+    .footer {
+        border-top: 1px solid var(--card-border);
+        padding: 2rem 0;
+        margin-top: 3rem;
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        color: var(--text-light);
+        font-size: 0.9rem;
+    }
+    .footer .links a {
+        color: var(--text-light);
+        text-decoration: none;
+        margin-left: 1.5rem;
+        transition: color 0.2s;
+    }
+    .footer .links a:hover { color: var(--primary); }
+
+    .support-section {
+        background: var(--card-bg);
+        backdrop-filter: blur(8px);
+        border-radius: 24px;
+        padding: 2.5rem;
+        margin: 3rem 0;
+        border: 1px solid var(--card-border);
+        text-align: center;
+        scroll-margin-top: 80px;
+    }
+    .support-section h2 {
+        color: var(--text-color);
+        font-weight: 800;
+        font-size: 2rem;
+    }
+    .support-section p {
+        color: var(--text-light);
+        font-size: 1.05rem;
+        max-width: 600px;
+        margin: 0.5rem auto;
+        line-height: 1.7;
+    }
+
+    .doc-page { max-width: 1200px; margin: 0 auto; padding: 1.5rem 1rem; }
+    .doc-page .header { margin-bottom: 2rem; }
+    .doc-page .header h1 { font-size: 2.2rem; font-weight: 800; color: var(--text-color); }
+    .doc-page .header p { color: var(--text-light); font-size: 1.1rem; }
+
+    .chat-float {
+        position: fixed;
+        bottom: 90px;
+        right: 20px;
+        width: 380px;
+        max-width: 90vw;
+        max-height: 70vh;
+        background: var(--card-bg);
+        backdrop-filter: blur(12px);
+        border: 1px solid var(--card-border);
+        border-radius: 24px;
+        box-shadow: 0 20px 60px var(--shadow-color);
+        z-index: 999;
+        display: none;
+        flex-direction: column;
+        overflow: hidden;
+        padding: 0;
+    }
+    .chat-float.open { display: flex; }
+    .chat-float .chat-header {
+        padding: 0.8rem 1.2rem;
+        background: var(--header-bg);
+        color: white;
+        font-weight: 700;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-shrink: 0;
+    }
+    .chat-float .chat-header button {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 1.2rem;
+        cursor: pointer;
+    }
+    .chat-float .chat-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    .chat-toggle-btn {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        z-index: 1000;
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        font-size: 2rem;
+        box-shadow: 0 8px 25px var(--shadow-color);
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .chat-toggle-btn:hover { transform: scale(1.05); }
+
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .fade-in { animation: fadeInUp 0.6s ease forwards; }
+
+    @media (max-width: 768px) {
+        .hero h1 { font-size: 2.2rem; }
+        .features-grid { grid-template-columns: 1fr; }
+        .chat-float { width: 90vw; right: 5vw; }
+        .about-section { flex-direction: column; text-align: center; }
+        .support-section { padding: 1.5rem; }
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# ---- JavaScript ----
+st.markdown("""
+<script>
+    function toggleTheme() {
+        const html = document.documentElement;
+        const current = html.getAttribute('data-theme');
+        const newTheme = current === 'dark' ? 'light' : 'dark';
+        html.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+    }
+    (function() {
+        const saved = localStorage.getItem('theme');
+        if (saved) { document.documentElement.setAttribute('data-theme', saved); }
+        else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+        }
+    })();
+    function toggleChat() {
+        const chat = document.getElementById('chat-float');
+        if (chat) chat.classList.toggle('open');
+    }
+</script>
+""", unsafe_allow_html=True)
+
+# ---- Session State ----
+if "skills" not in st.session_state:
+    st.session_state.skills = []
+if "jobs" not in st.session_state:
+    st.session_state.jobs = []
+if "user_data" not in st.session_state:
+    st.session_state.user_data = {}
+if "chat_messages" not in st.session_state:
+    st.session_state.chat_messages = []
+if "chat_input" not in st.session_state:
+    st.session_state.chat_input = ""
+if "page" not in st.session_state:
+    st.session_state.page = "Home"
+if "pending_improve_exp" not in st.session_state:
+    st.session_state.pending_improve_exp = None
+if "pending_improve_summary" not in st.session_state:
+    st.session_state.pending_improve_summary = None
+
+# ---- Page navigation helper ----
+def go_to_page(page_name):
+    st.session_state.page = page_name
+    st.rerun()
+
+# ---- Safe AI response helper ----
+def safe_ai_response(response, fallback=None):
+    if response is None:
+        return fallback
+    if not isinstance(response, str):
+        return fallback
+    error_indicators = ["error", "failed", "⚠️", "unavailable", "timeout", "rate limit"]
+    if any(indicator in response.lower() for indicator in error_indicators):
+        return fallback
+    return response
+
+# ---- Sidebar Navigation ----
+with st.sidebar:
+    st.markdown("""
+    <div style="text-align:center; padding:0.5rem 0;">
+        <div style="font-size:2.5rem;">📄</div>
+        <div style="font-weight:700; font-size:1.4rem; color:var(--text-color);">DocForge</div>
+        <div style="color:var(--text-light); font-size:0.85rem;">Professional Documents</div>
+    </div>
+    """, unsafe_allow_html=True)
+    st.markdown("---")
+
+    page_choices = ["🏠 Home", "📝 Builder", "📄 Resume", "📋 CV", "✉️ Cover Letter", "📊 Proposal", "🏆 Experience", "🔍 Job Scraper", "🤖 AI Assistant"]
+    current_index = page_choices.index([p for p in page_choices if p.split(" ")[-1] == st.session_state.page][0]) if any(p.split(" ")[-1] == st.session_state.page for p in page_choices) else 0
+
+    selected = st.radio(
+        "Navigate",
+        page_choices,
+        index=current_index,
+        label_visibility="collapsed"
     )
+    page_map = {
+        "🏠 Home": "Home",
+        "📝 Builder": "Builder",
+        "📄 Resume": "Resume",
+        "📋 CV": "CV",
+        "✉️ Cover Letter": "CoverLetter",
+        "📊 Proposal": "Proposal",
+        "🏆 Experience": "Experience",
+        "🔍 Job Scraper": "JobScraper",
+        "🤖 AI Assistant": "AIAssistant"
+    }
+    if selected:
+        st.session_state.page = page_map[selected]
 
-# ── CUSTOM HEADER FLOWABLE ──────────────────────────────────────────────────
-class HeaderBackground(Flowable):
-    def __init__(self, name, title, contact, color):
-        Flowable.__init__(self)
-        self.name = name or "Your Name"
-        self.title = title
-        self.contact = contact
-        self.color = color
-        self.width = BODY_W
-        self.height = 60 * mm
+    st.markdown("---")
+    col1, col2 = st.columns(2)
+    col1.metric("🛠️ Skills", len(st.session_state.skills))
+    col2.metric("💼 Jobs", len(st.session_state.jobs))
+    st.caption("⚡ Streamlit · ReportLab")
 
-    def wrap(self, availWidth, availHeight):
-        return (self.width, self.height)
+    st.markdown("---")
+    if st.button("🌓 Toggle Theme", use_container_width=True):
+        st.markdown("<script>toggleTheme();</script>", unsafe_allow_html=True)
 
-    def draw(self):
-        c = self.canv
-        c.setFillColor(self.color)
-        c.rect(0, 0, self.width, self.height, stroke=0, fill=1)
-        c.setFillColor(colors.white)
-        c.setFont("Helvetica-Bold", 22)
-        c.drawCentredString(self.width/2, self.height - 18*mm, self.name)
-        if self.title:
-            c.setFont("Helvetica", 12)
-            c.drawCentredString(self.width/2, self.height - 32*mm, self.title)
-        if self.contact:
-            c.setFont("Helvetica", 9)
-            c.drawCentredString(self.width/2, self.height - 44*mm, self.contact)
+# ---- Determine current page ----
+page = st.session_state.page
 
-# ── RESUME GENERATOR ─────────────────────────────────────────────────────────
-def generate_resume_pdf(data):
-    buf = io.BytesIO()
-    theme = THEMES.get(data.get("theme", "Classic Green"), THEMES["Classic Green"])
-    PRIMARY = _hex(theme["primary"])
-    LIGHT = _hex(theme["light"])
-    DARK = _hex(theme["dark"])
+# ---- Helper to get user data ----
+def get_user_data():
+    return {
+        "name": st.session_state.get("f_name", ""),
+        "title": st.session_state.get("f_title", ""),
+        "email": st.session_state.get("f_email", ""),
+        "phone": st.session_state.get("f_phone", ""),
+        "location": st.session_state.get("f_loc", ""),
+        "linkedin": st.session_state.get("f_linkedin", ""),
+        "skills": st.session_state.skills,
+        "company": st.session_state.get("f_company", ""),
+        "role": st.session_state.get("f_exp_role", ""),
+        "duration": st.session_state.get("f_duration", ""),
+        "exp_desc": st.session_state.get("f_exp_desc", ""),
+        "add_exp": st.session_state.get("f_add_exp", ""),
+        "degree": st.session_state.get("f_degree", ""),
+        "institution": st.session_state.get("f_inst", ""),
+        "year": st.session_state.get("f_year", ""),
+        "projects": st.session_state.get("f_projects", ""),
+        "summary": st.session_state.get("f_summary", ""),
+        "languages": st.session_state.get("f_languages", ""),
+        "certifications": st.session_state.get("f_certs", ""),
+        "theme": "Classic Green",
+    }
 
-    doc = SimpleDocTemplate(
-        buf, pagesize=A4,
-        leftMargin=LM, rightMargin=RM,
-        topMargin=TM, bottomMargin=BM,
-    )
+# ==================== PAGES ====================
 
-    story = []
+if page == "Home":
+    st.markdown("""
+    <div class="hero">
+        <h1>Create <span>Professional Documents</span><br>Instantly</h1>
+        <p>Build resumes, CVs, cover letters, proposals, and experience letters – all from one platform. No design skills needed.</p>
+        <div class="buttons">
+            <a href="#" class="btn-primary" onclick="document.querySelector('[data-testid=\\"stButton\\"] button')?.click()">Get Started Free</a>
+            <a href="#about" class="btn-secondary">Learn More</a>
+            <a href="#support-section" class="btn-support">Support Me 💖</a>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
-    # ── HEADER ──
-    name = data.get("name", "").strip()
-    if not name:
-        name = "Your Name (fill in Builder)"
-    title = data.get("title", "").strip()
-    email = data.get("email", "").strip()
-    phone = data.get("phone", "").strip()
-    location = data.get("location", "").strip()
-    linkedin = data.get("linkedin", "").strip()
+    if st.button("Get Started Free (hidden)", key="home_get_started", use_container_width=False, type="primary"):
+        go_to_page("Builder")
 
-    contact_parts = [p for p in [email, phone, location, linkedin] if p]
-    contact = " · ".join(contact_parts)
+    st.markdown("""
+    <div class="about-section" id="about">
+        <div class="text">
+            <h2>👋 About Me</h2>
+            <p><strong>Rudraksh Panwar</strong><br>
+            B.Sc Computer Science student at <strong>IIMT College of Science and Technology</strong>.</p>
+            <p><strong>Skills:</strong> MySQL, Python<br>
+            <strong>Currently learning:</strong> GUI Development, Operating System concepts.</p>
+            <p>I built DocForge as a project to help students and professionals create polished documents effortlessly.
+            Passionate about technology, coding, and building things that make life easier.</p>
+        </div>
+        <div class="avatar">RP</div>
+    </div>
+    """, unsafe_allow_html=True)
 
-    story.append(HeaderBackground(name, title, contact, PRIMARY))
-    story.append(Spacer(1, 6*mm))
+    st.markdown("""
+    <div class="section-header">
+        <span class="badge">Features</span>
+        <h2>Everything You Need</h2>
+        <p>Click any card to jump directly to that tool.</p>
+    </div>
+    <div class="features-grid">
+    """, unsafe_allow_html=True)
 
-    # ── Professional Summary ──
-    summary = data.get("summary", "").strip()
-    if summary:
-        story.append(Paragraph("PROFESSIONAL SUMMARY", _style("Sec", "Helvetica-Bold", 10, PRIMARY, 12, sb=6, sa=2)))
-        story.append(Paragraph(summary, _style("Summary", size=9.5, color="#333333", leading=14, sa=8)))
-        story.append(Spacer(1, 3*mm))
+    features = [
+        ("📄", "Resume Builder", "ATS-friendly resumes with multiple themes.", "Resume"),
+        ("📋", "CV Generator", "Comprehensive curriculum vitae with publications.", "CV"),
+        ("✉️", "Cover Letters", "Personalized letters for job applications.", "CoverLetter"),
+        ("📊", "Proposal Generator", "Professional project proposals for clients.", "Proposal"),
+        ("🏆", "Experience Letters", "Employment verification letters.", "Experience"),
+        ("🔍", "Job Scraper", "Find jobs and match your skills.", "JobScraper"),
+        ("🤖", "AI Assistant", "Get AI-powered suggestions and help.", "AIAssistant"),
+    ]
 
-    # ── Two Column Layout ──
-    left_w = 55 * mm
-    right_w = BODY_W - left_w - 8 * mm
+    cols = st.columns(3)
+    for i, (icon, title, desc, page_key) in enumerate(features):
+        with cols[i % 3]:
+            if st.button(
+                f"{icon}\n\n**{title}**\n\n{desc}",
+                key=f"home_feature_{page_key}",
+                use_container_width=True,
+                type="secondary",
+            ):
+                go_to_page(page_key)
 
-    left_items = []
-    right_items = []
+    st.markdown("</div>", unsafe_allow_html=True)
 
-    # Left: Skills
-    skills = [s.strip() for s in (data.get("skills") or []) if s and s.strip()]
-    if skills:
-        left_items.append(("SEC", "SKILLS"))
-        for sk in skills:
-            left_items.append(("SKILL", sk.title()))
-            left_items.append(("SPACER", 2))
+    st.markdown("""
+    <div class="cta-section">
+        <h2>Ready to Build Your Document?</h2>
+        <p>Get started now – it's free and takes less than 5 minutes.</p>
+        <div style="display: flex; justify-content: center; margin-top: 1.5rem;">
+    """, unsafe_allow_html=True)
 
-    # Left: Education
-    degree = (data.get("degree", "") or "").strip()
-    institution = (data.get("institution", "") or "").strip()
-    year = (data.get("year", "") or "").strip()
-    if degree or institution or year:
-        left_items.append(("SPACER", 10))
-        left_items.append(("SEC", "EDUCATION"))
-        if degree:
-            left_items.append(("BOLD", degree))
-        inst_line = " · ".join(filter(None, [institution, year]))
-        if inst_line:
-            left_items.append(("MUTED", inst_line))
+    if st.button("Start Building", key="cta_start_building", use_container_width=False, type="primary"):
+        go_to_page("Builder")
 
-    # Left: Languages
-    languages = (data.get("languages", "") or "").strip()
-    if languages:
-        left_items.append(("SPACER", 10))
-        left_items.append(("SEC", "LANGUAGES"))
-        left_items.append(("MUTED", languages))
+    st.markdown("""
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
-    # Right: Experience
-    role = (data.get("role", "") or "").strip()
-    company = (data.get("company", "") or "").strip()
-    duration = (data.get("duration", "") or "").strip()
-    exp_desc = (data.get("exp_desc", "") or "").strip()
-    if role or company or duration or exp_desc:
-        right_items.append(("SEC", "EXPERIENCE"))
-        if role:
-            right_items.append(("BOLD", role))
-        co_line = " · ".join(filter(None, [company, duration]))
-        if co_line:
-            right_items.append(("MUTED", co_line))
-        if exp_desc:
-            right_items.append(("SPACER", 3))
-            for line in exp_desc.split('\n'):
-                if line.strip():
-                    right_items.append(("BODY", line.strip()))
+    # Support section
+    st.markdown("""
+    <div class="support-section" id="support-section">
+        <h2>❤️ Support the Developer</h2>
+        <p>
+            If DocForge has helped you create professional documents, consider supporting my work.
+            Every contribution, no matter how small, helps me keep building free tools for students and professionals like you.
+            Your support fuels my passion to create more useful tools and improve existing ones.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
 
-    # Right: Projects
-    projects = (data.get("projects", "") or "").strip()
-    if projects:
-        right_items.append(("SPACER", 10))
-        right_items.append(("SEC", "PROJECTS"))
-        for line in projects.split('\n'):
-            if line.strip():
-                right_items.append(("BODY", line.strip()))
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        possible_paths = [
+            "api_qr.jpeg",
+            "./api_qr.jpeg",
+            "static/api_qr.jpeg",
+            "./static/api_qr.jpeg",
+            "api_qr.png",
+            "static/api_qr.png",
+        ]
+        found = False
+        for path in possible_paths:
+            if os.path.exists(path):
+                st.image(path, caption="Scan to support", use_container_width=True)
+                found = True
+                break
+        if not found:
+            st.error("""
+            **QR Code not found.**  
+            Please ensure the file is named `api_qr.jpeg` and placed in the **root folder** of your repository (same level as `app.py`).
+            """)
+        st.markdown("""
+        <div style="text-align: center; padding-bottom: 2rem;">
+            <p style="color: var(--text-light); font-size: 0.95rem;">
+                Scan the QR code with your UPI app to send a payment. Every contribution counts – thank you! 🙏
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
 
-    # Right: Additional Experience
-    add_exp = (data.get("add_exp", "") or "").strip()
-    if add_exp:
-        right_items.append(("SPACER", 10))
-        right_items.append(("SEC", "ADDITIONAL EXPERIENCE"))
-        for line in add_exp.split('\n'):
-            if line.strip():
-                right_items.append(("BODY", line.strip()))
+# ---- BUILDER ----
+elif page == "Builder":
+    st.markdown("""
+    <div class="doc-page">
+        <div class="header">
+            <h1>📝 Document Builder</h1>
+            <p>Fill your information once. All documents will use this data.</p>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
-    # ── Convert to flowables ──
-    def to_flowable(kind, val, col_w):
-        if kind == "SPACER":
-            return Spacer(1, float(val))
-        elif kind == "SEC":
-            return Paragraph(val.upper(), _style("Sec", "Helvetica-Bold", 8.5, PRIMARY, 11, sb=4, sa=2))
-        elif kind == "BOLD":
-            return Paragraph(val, _style("Bold", "Helvetica-Bold", 10, "#0f0f0f", 13))
-        elif kind == "MUTED":
-            return Paragraph(val, _style("Muted", size=8.5, color="#666666", leading=11))
-        elif kind == "BODY":
-            return Paragraph(f"• {val}", _style("Body", size=9.5, color="#333333", leading=13))
-        elif kind == "SKILL":
-            skill_style = _style("Skill", size=8.5, color=DARK, leading=11, align=TA_CENTER)
-            pill = Table([[Paragraph(val, skill_style)]], colWidths=[col_w - 12])
-            pill.setStyle(TableStyle([
-                ("BACKGROUND", (0,0), (-1,-1), LIGHT),
-                ("TOPPADDING", (0,0), (-1,-1), 4),
-                ("BOTTOMPADDING", (0,0), (-1,-1), 4),
-                ("LEFTPADDING", (0,0), (-1,-1), 8),
-                ("RIGHTPADDING", (0,0), (-1,-1), 8),
-            ]))
-            return pill
-        return Spacer(1, 1)
+    # Apply pending improvements
+    if st.session_state.pending_improve_exp is not None:
+        st.session_state.f_exp_desc = st.session_state.pending_improve_exp
+        st.session_state.pending_improve_exp = None
 
-    left_flows = [to_flowable(k, v, left_w) for k, v in left_items]
-    right_flows = [to_flowable(k, v, right_w) for k, v in right_items]
+    if st.session_state.pending_improve_summary is not None:
+        st.session_state.f_summary = st.session_state.pending_improve_summary
+        st.session_state.pending_improve_summary = None
 
-    n = max(len(left_flows), len(right_flows), 1)
-    left_flows += [Spacer(1, 1)] * (n - len(left_flows))
-    right_flows += [Spacer(1, 1)] * (n - len(right_flows))
+    tabs = st.tabs(["👤 Personal", "💼 Experience", "🎓 Education", "🛠️ Skills", "📝 Extra"])
 
-    rows = [[l, r] for l, r in zip(left_flows, right_flows)]
+    with tabs[0]:
+        col1, col2 = st.columns(2)
+        with col1:
+            st.text_input("Full Name *", key="f_name", placeholder="John Doe")
+            st.text_input("Email *", key="f_email", placeholder="john@example.com")
+            st.text_input("Phone", key="f_phone", placeholder="+1 234 567 890")
+        with col2:
+            st.text_input("Professional Title", key="f_title", placeholder="Software Engineer")
+            st.text_input("Location", key="f_loc", placeholder="San Francisco, CA")
+            st.text_input("LinkedIn URL", key="f_linkedin", placeholder="linkedin.com/in/john")
 
-    body = Table(rows, colWidths=[left_w, right_w], hAlign="LEFT")
-    body.setStyle(TableStyle([
-        ("VALIGN", (0,0), (-1,-1), "TOP"),
-        ("TOPPADDING", (0,0), (-1,-1), 2),
-        ("BOTTOMPADDING", (0,0), (-1,-1), 2),
-        ("LEFTPADDING", (0,0), (-1,-1), 2),
-        ("RIGHTPADDING", (0,0), (-1,-1), 2),
-        ("LEFTPADDING", (1,0), (1,-1), 12),
-        ("LINEAFTER", (0,0), (0,-1), 0.5, _hex("#e0e0e0")),
-    ]))
-    story.append(body)
+    with tabs[1]:
+        col1, col2 = st.columns(2)
+        with col1:
+            st.text_input("Company", key="f_company", placeholder="Tech Corp")
+            st.text_input("Role", key="f_exp_role", placeholder="Senior Developer")
+        with col2:
+            st.text_input("Duration", key="f_duration", placeholder="Jan 2020 – Present")
+        st.text_area("Job Description", key="f_exp_desc", placeholder="• Built REST APIs serving 10k users/day\n• Led team of 5 developers", height=120)
+        col_ai1, col_ai2 = st.columns([4, 1])
+        with col_ai2:
+            if st.button("✨ Improve", key="improve_exp"):
+                try:
+                    improved = ai_suggest_improvements("job description", st.session_state.f_exp_desc)
+                    valid = safe_ai_response(improved)
+                    if valid is not None:
+                        st.session_state.pending_improve_exp = valid
+                        st.rerun()
+                    else:
+                        st.warning("AI suggestion returned an error. Please try again or check your API key.")
+                except Exception as e:
+                    st.error(f"An error occurred: {str(e)}")
 
-    doc.build(story)
-    return buf.getvalue()
+    with tabs[2]:
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.text_input("Degree", key="f_degree", placeholder="B.Tech Computer Science")
+        with col2:
+            st.text_input("Institution", key="f_inst", placeholder="Stanford University")
+        with col3:
+            st.text_input("Year", key="f_year", placeholder="2016 – 2020")
 
-# ── CV (reuses resume) ──────────────────────────────────────────────────────
-def generate_cv_pdf(data):
-    return generate_resume_pdf(data)
+    with tabs[3]:
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            new_skill = st.text_input("Add a skill", key="skill_input", placeholder="Python, React, SQL...")
+        with col2:
+            if st.button("➕ Add", use_container_width=True) and new_skill.strip():
+                s = new_skill.strip().lower()
+                if s not in st.session_state.skills:
+                    st.session_state.skills.append(s)
+                st.rerun()
 
-# ── COVER LETTER ────────────────────────────────────────────────────────────
-def generate_cover_letter_pdf(data):
-    # (same as before – kept unchanged)
-    # I'll omit the full code here for brevity, but keep it from the previous version.
-    # In practice, you must include it.
+        job_title_for_skills = st.text_input("Job Title for Skill Suggestions", placeholder="e.g., Data Scientist")
+        if st.button("🤖 Suggest Skills") and job_title_for_skills:
+            try:
+                suggested = ai_autofill_skills(job_title_for_skills)
+                valid = safe_ai_response(suggested)
+                if valid is not None:
+                    skills_list = [s.strip().lower() for s in valid.split(',') if s.strip()]
+                    for sk in skills_list:
+                        if sk not in st.session_state.skills:
+                            st.session_state.skills.append(sk)
+                    st.rerun()
+                else:
+                    st.warning("Could not get skill suggestions. Please try again.")
+            except Exception as e:
+                st.error(f"An error occurred: {str(e)}")
+
+        if st.session_state.skills:
+            st.markdown("**Your Skills:**")
+            cols = st.columns(6)
+            for i, sk in enumerate(st.session_state.skills):
+                with cols[i % 6]:
+                    if st.button(f"✕ {sk.title()}", key=f"rm_{sk}"):
+                        st.session_state.skills.remove(sk)
+                        st.rerun()
+        else:
+            st.info("No skills added yet.")
+
+        st.text_area("Projects (one per line)", key="f_projects", placeholder="ResumeForge — AI resume builder\nTaskBot — Slack automation", height=100)
+
+    with tabs[4]:
+        st.text_area("Professional Summary", key="f_summary", placeholder="Experienced software engineer with 5+ years...", height=100)
+        col_ai1, col_ai2 = st.columns([4, 1])
+        with col_ai2:
+            if st.button("✨ Improve", key="improve_summary"):
+                try:
+                    improved = ai_suggest_improvements("professional summary", st.session_state.f_summary)
+                    valid = safe_ai_response(improved)
+                    if valid is not None:
+                        st.session_state.pending_improve_summary = valid
+                        st.rerun()
+                    else:
+                        st.warning("AI suggestion returned an error. Please try again or check your API key.")
+                except Exception as e:
+                    st.error(f"An error occurred: {str(e)}")
+
+    if st.button("💾 Save Information", type="primary", use_container_width=True):
+        st.success("✅ All information saved!")
+
+# ---- RESUME ----
+elif page == "Resume":
+    st.markdown("""
+    <div class="doc-page">
+        <div class="header">
+            <h1>📄 Resume Generator</h1>
+            <p>Create an ATS-optimized professional resume.</p>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    col1, col2 = st.columns([2, 1])
+    with col1:
+        theme = st.selectbox("🎨 Theme", ["Classic Green", "Corporate Blue", "Creative Purple"], key="resume_theme")
+        summary = st.text_area("Professional Summary", key="resume_summary", placeholder="Write a brief summary...", height=100)
+    with col2:
+        st.markdown("**Preview Sections**")
+        st.markdown("✅ Personal Info\n✅ Summary\n✅ Skills\n✅ Experience\n✅ Education\n✅ Projects")
+
+    if st.button("📥 Generate Resume PDF", type="primary", use_container_width=True):
+        if not st.session_state.get("f_name", "").strip():
+            st.error("⚠️ Please fill in your Full Name in the Builder page before generating a resume.")
+        else:
+            data = get_user_data()
+            data["summary"] = st.session_state.get("resume_summary", "")
+            data["theme"] = st.session_state.get("resume_theme", "Classic Green")
+            pdf = generate_resume_pdf(data)
+            if pdf:
+                st.download_button(
+                    label="⬇️ Download PDF",
+                    data=pdf,
+                    file_name=f"{data['name'].replace(' ', '_')}_Resume.pdf",
+                    mime="application/pdf",
+                    use_container_width=True
+                )
+            else:
+                st.error("Failed to generate PDF. Check logs.")
+
+# ---- CV ----
+elif page == "CV":
+    st.markdown("""
+    <div class="doc-page">
+        <div class="header">
+            <h1>📋 CV Generator</h1>
+            <p>Create a comprehensive curriculum vitae.</p>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    col1, col2 = st.columns([2, 1])
+    with col1:
+        cv_theme = st.selectbox("🎨 Theme", ["Classic Green", "Corporate Blue", "Creative Purple"], key="cv_theme")
+        publications = st.text_area("Publications (one per line)", key="cv_publications", placeholder="• Smith, J. (2023). 'AI in Healthcare.' Journal of AI, 12(3), 45-67.", height=80)
+    with col2:
+        st.markdown("**CV Sections**")
+        st.markdown("✅ Personal Info\n✅ Summary\n✅ Skills\n✅ Experience\n✅ Education\n✅ Publications\n✅ Projects")
+
+    if st.button("📥 Generate CV PDF", type="primary", use_container_width=True):
+        if not st.session_state.get("f_name", "").strip():
+            st.error("⚠️ Please fill in your Full Name in the Builder page first.")
+        else:
+            data = get_user_data()
+            data["publications"] = st.session_state.get("cv_publications", "")
+            data["theme"] = st.session_state.get("cv_theme", "Classic Green")
+            pdf = generate_cv_pdf(data)
+            if pdf:
+                st.download_button(
+                    label="⬇️ Download PDF",
+                    data=pdf,
+                    file_name=f"{data['name'].replace(' ', '_')}_CV.pdf",
+                    mime="application/pdf",
+                    use_container_width=True
+                )
+            else:
+                st.error("Failed to generate PDF.")
+
+# ---- COVER LETTER ----
+elif page == "CoverLetter":
+    st.markdown("""
+    <div class="doc-page">
+        <div class="header">
+            <h1>✉️ Cover Letter Generator</h1>
+            <p>Personalized cover letters for job applications.</p>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    col1, col2 = st.columns([2, 1])
+    with col1:
+        col_a, col_b = st.columns(2)
+        with col_a:
+            cover_company = st.text_input("Company Name *", key="cover_company", placeholder="Google")
+            cover_position = st.text_input("Position *", key="cover_position", placeholder="Software Engineer")
+        with col_b:
+            cover_recruiter = st.text_input("Recruiter Name", key="cover_recruiter", placeholder="Sarah Johnson")
+        cover_custom = st.text_area("Additional Message (optional)", key="cover_custom", placeholder="Why you're interested, specific achievements...", height=100)
+        cover_theme = st.selectbox("🎨 Theme", ["Classic Green", "Corporate Blue", "Creative Purple"], key="cover_theme")
+    with col2:
+        st.markdown("**Letter Structure**")
+        st.markdown("✅ Sender Info\n✅ Date\n✅ Recipient\n✅ Salutation\n✅ Body\n✅ Closing\n✅ Signature")
+
+    if st.button("📥 Generate Cover Letter PDF", type="primary", use_container_width=True):
+        data = get_user_data()
+        data["cover_company"] = st.session_state.get("cover_company", "")
+        data["cover_position"] = st.session_state.get("cover_position", "")
+        data["cover_recruiter"] = st.session_state.get("cover_recruiter", "")
+        data["cover_custom"] = st.session_state.get("cover_custom", "")
+        data["theme"] = st.session_state.get("cover_theme", "Classic Green")
+        pdf = generate_cover_letter_pdf(data)
+        if pdf:
+            st.download_button(
+                label="⬇️ Download PDF",
+                data=pdf,
+                file_name=f"{data['name'].replace(' ', '_')}_Cover_Letter.pdf",
+                mime="application/pdf",
+                use_container_width=True
+            )
+        else:
+            st.error("Failed to generate PDF.")
+
+# ---- PROPOSAL ----
+elif page == "Proposal":
+    st.markdown("""
+    <div class="doc-page">
+        <div class="header">
+            <h1>📊 Proposal Generator</h1>
+            <p>Professional project proposals for clients.</p>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    col1, col2 = st.columns([2, 1])
+    with col1:
+        col_a, col_b = st.columns(2)
+        with col_a:
+            proposal_title = st.text_input("Proposal Title *", key="prop_title", placeholder="AI-Powered Customer Support")
+            proposal_client = st.text_input("Client/Organization *", key="prop_client", placeholder="ABC Corp")
+        with col_b:
+            proposal_budget = st.text_input("Budget", key="prop_budget", placeholder="$50,000 – $75,000")
+            proposal_timeline = st.text_input("Timeline", key="prop_timeline", placeholder="3 months")
+        proposal_summary = st.text_area("Executive Summary *", key="prop_summary", placeholder="This proposal outlines...", height=100)
+        proposal_approach = st.text_area("Approach/Methodology *", key="prop_approach", placeholder="1. Requirement Analysis\n2. Design\n3. Development\n4. Testing", height=80)
+        proposal_theme = st.selectbox("🎨 Theme", ["Classic Green", "Corporate Blue", "Creative Purple"], key="prop_theme")
+    with col2:
+        st.markdown("**Proposal Sections**")
+        st.markdown("✅ Title\n✅ Client Info\n✅ Executive Summary\n✅ Approach\n✅ About Us\n✅ Contact")
+
+    if st.button("📥 Generate Proposal PDF", type="primary", use_container_width=True):
+        data = get_user_data()
+        data["proposal_title"] = st.session_state.get("prop_title", "")
+        data["proposal_client"] = st.session_state.get("prop_client", "")
+        data["proposal_budget"] = st.session_state.get("prop_budget", "")
+        data["proposal_timeline"] = st.session_state.get("prop_timeline", "")
+        data["proposal_summary"] = st.session_state.get("prop_summary", "")
+        data["proposal_approach"] = st.session_state.get("prop_approach", "")
+        data["theme"] = st.session_state.get("prop_theme", "Classic Green")
+        pdf = generate_proposal_pdf(data)
+        if pdf:
+            st.download_button(
+                label="⬇️ Download PDF",
+                data=pdf,
+                file_name=f"{data['name'].replace(' ', '_')}_Proposal.pdf",
+                mime="application/pdf",
+                use_container_width=True
+            )
+        else:
+            st.error("Failed to generate PDF.")
+
+# ---- EXPERIENCE LETTER ----
+elif page == "Experience":
+    st.markdown("""
+    <div class="doc-page">
+        <div class="header">
+            <h1>🏆 Experience Letter Generator</h1>
+            <p>Employment verification letters.</p>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    col1, col2 = st.columns([2, 1])
+    with col1:
+        col_a, col_b = st.columns(2)
+        with col_a:
+            exp_company = st.text_input("Company Name *", key="exp_company", placeholder="TechCorp Inc.")
+            exp_employee = st.text_input("Employee Name *", key="exp_employee", placeholder="John Doe")
+            exp_position = st.text_input("Position Held *", key="exp_position", placeholder="Senior Developer")
+        with col_b:
+            exp_period = st.text_input("Employment Period *", key="exp_period", placeholder="Jan 2020 – Dec 2023")
+            exp_issuer = st.text_input("Issuer Name *", key="exp_issuer", placeholder="Jane Smith")
+            exp_issuer_title = st.text_input("Issuer Title *", key="exp_issuer_title", placeholder="HR Manager")
+        exp_remarks = st.text_area("Performance Remarks *", key="exp_remarks", placeholder="John was an exceptional employee...", height=80)
+        exp_theme = st.selectbox("🎨 Theme", ["Classic Green", "Corporate Blue", "Creative Purple"], key="exp_theme")
+    with col2:
+        st.markdown("**Letter Sections**")
+        st.markdown("✅ Company Header\n✅ Date\n✅ Subject\n✅ Employee Details\n✅ Performance Remarks\n✅ Issuer Info")
+
+    if st.button("📥 Generate Experience Letter PDF", type="primary", use_container_width=True):
+        data = {
+            "exp_company": st.session_state.get("exp_company", ""),
+            "exp_employee": st.session_state.get("exp_employee", ""),
+            "exp_position": st.session_state.get("exp_position", ""),
+            "exp_period": st.session_state.get("exp_period", ""),
+            "exp_remarks": st.session_state.get("exp_remarks", ""),
+            "exp_issuer": st.session_state.get("exp_issuer", ""),
+            "exp_issuer_title": st.session_state.get("exp_issuer_title", ""),
+            "theme": st.session_state.get("exp_theme", "Classic Green"),
+        }
+        pdf = generate_experience_letter_pdf(data)
+        if pdf:
+            st.download_button(
+                label="⬇️ Download PDF",
+                data=pdf,
+                file_name=f"{data['exp_employee'].replace(' ', '_')}_Experience_Letter.pdf",
+                mime="application/pdf",
+                use_container_width=True
+            )
+        else:
+            st.error("Failed to generate PDF.")
+
+# ---- JOB SCRAPER ----
+elif page == "JobScraper":
+    st.markdown("""
+    <div class="doc-page">
+        <div class="header">
+            <h1>🔍 Job Scraper</h1>
+            <p>Find jobs and match your skills.</p>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    col1, col2 = st.columns([2, 1])
+    with col1:
+        role = st.text_input("Job Role", value="Python Developer")
+        source = st.selectbox("Source", ["RemoteOK (live)", "Simulated"])
+        if st.button("🔍 Scrape Jobs", type="primary", use_container_width=True):
+            with st.spinner("Fetching jobs..."):
+                jobs = get_jobs(role, source, st.session_state.skills)
+                st.session_state.jobs = jobs
+            st.success(f"Found {len(jobs)} jobs!")
+    with col2:
+        st.metric("Total Jobs", len(st.session_state.jobs))
+        if st.session_state.jobs:
+            avg = sum(j["match"] for j in st.session_state.jobs) / len(st.session_state.jobs)
+            st.metric("Avg Match", f"{avg:.1f}%")
+
+    st.markdown("---")
+    if st.session_state.jobs:
+        st.subheader("📋 Job Listings")
+        for job in st.session_state.jobs[:10]:
+            with st.container():
+                col_a, col_b = st.columns([3, 1])
+                with col_a:
+                    st.markdown(f"**{job['emoji']} {job['title']}**")
+                    st.markdown(f"🏢 {job['company']} · 📍 {job['loc']} · {job['type']}")
+                with col_b:
+                    color = "#10b981" if job["match"] >= 70 else "#f59e0b" if job["match"] >= 40 else "#ef4444"
+                    st.markdown(f"<h3 style='color:{color};'>{job['match']}%</h3>", unsafe_allow_html=True)
+                st.markdown("---")
+    else:
+        st.info("No jobs found. Click 'Scrape Jobs' to search.")
+
+# ---- AI ASSISTANT ----
+elif page == "AIAssistant":
+    st.markdown("""
+    <div class="doc-page">
+        <div class="header">
+            <h1>🤖 AI Document Assistant</h1>
+            <p>Get AI‑powered suggestions to improve your documents and career content.</p>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    tab_ai = st.tabs(["✨ Improve Text", "📝 Generate Summary", "🛠️ Suggest Skills", "✉️ Cover Letter"])
+
+    with tab_ai[0]:
+        text_to_improve = st.text_area("Paste text to improve", height=150)
+        if st.button("Improve Text"):
+            if text_to_improve:
+                improved = ai_suggest_improvements("text", text_to_improve)
+                valid = safe_ai_response(improved)
+                if valid is not None:
+                    st.markdown("### Improved Version")
+                    st.write(valid)
+                else:
+                    st.warning("AI suggestion returned an error. Please try again.")
+            else:
+                st.warning("Please enter some text.")
+
+    with tab_ai[1]:
+        if st.button("Generate Professional Summary"):
+            skills = ", ".join(st.session_state.skills)
+            experience = st.session_state.get("f_exp_desc", "")
+            name = st.session_state.get("f_name", "Candidate")
+            title = st.session_state.get("f_title", "Professional")
+            summary = ai_generate_summary(name, title, skills, experience)
+            valid = safe_ai_response(summary)
+            if valid is not None:
+                st.markdown("### Generated Summary")
+                st.write(valid)
+                if st.button("Use This Summary"):
+                    st.session_state.f_summary = valid
+                    st.rerun()
+            else:
+                st.warning("Could not generate summary. Please try again.")
+
+    with tab_ai[2]:
+        job_title = st.text_input("Job Title", placeholder="e.g., Data Scientist")
+        if st.button("Suggest Skills"):
+            if job_title:
+                skills = ai_autofill_skills(job_title)
+                valid = safe_ai_response(skills)
+                if valid is not None:
+                    st.markdown("### Suggested Skills")
+                    for sk in valid.split(','):
+                        if sk.strip():
+                            st.write(f"• {sk.strip()}")
+                    if st.button("Add All to My Skills"):
+                        for sk in valid.split(','):
+                            s = sk.strip().lower()
+                            if s and s not in st.session_state.skills:
+                                st.session_state.skills.append(s)
+                        st.rerun()
+                else:
+                    st.warning("Could not get skill suggestions. Please try again.")
+            else:
+                st.warning("Enter a job title.")
+
+    with tab_ai[3]:
+        col1, col2 = st.columns(2)
+        with col1:
+            company = st.text_input("Company Name", placeholder="Google")
+            position = st.text_input("Position", placeholder="Software Engineer")
+        with col2:
+            recruiter = st.text_input("Recruiter Name (optional)", placeholder="Sarah Johnson")
+        if st.button("Generate Cover Letter"):
+            if company and position:
+                skills = ", ".join(st.session_state.skills)
+                experience = st.session_state.get("f_exp_desc", "")
+                name = st.session_state.get("f_name", "Candidate")
+                letter = ai_generate_cover_letter(name, position, company, skills, experience)
+                valid = safe_ai_response(letter)
+                if valid is not None:
+                    st.markdown("### Generated Cover Letter")
+                    st.write(valid)
+                    if st.button("Use This Cover Letter"):
+                        st.session_state.cover_letter_ai = valid
+                        st.info("Cover letter saved. Go to Cover Letter page to use it.")
+                else:
+                    st.warning("Could not generate cover letter. Please try again.")
+            else:
+                st.warning("Please fill in company and position.")
+
+# ---- FOOTER ----
+st.markdown("""
+<div class="footer">
+    <span>© 2026 DocForge – Built with ❤️ by Rudraksh Panwar</span>
+    <div class="links">
+        <a href="#">Privacy</a>
+        <a href="#">Terms</a>
+        <a href="#">Contact</a>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+# ---- FLOATING CHAT ----
+if "show_chat" not in st.session_state:
+    st.session_state.show_chat = False
+
+st.markdown("""
+<button class="chat-toggle-btn" onclick="toggleChat()">
+    💬
+</button>
+""", unsafe_allow_html=True)
+
+chat_placeholder = st.empty()
+
+if st.session_state.show_chat:
+    with chat_placeholder.container():
+        st.markdown("""
+        <div id="chat-float" class="chat-float open">
+            <div class="chat-header">
+                <span>🤖 DocForge Assistant</span>
+                <button onclick="document.getElementById('chat-float').classList.remove('open'); toggleChat();">✕</button>
+            </div>
+            <div class="chat-body">
+        """, unsafe_allow_html=True)
+
+        for msg in st.session_state.chat_messages:
+            with st.chat_message(msg["role"]):
+                st.write(msg["content"])
+
+        prompt = st.chat_input("Ask me anything about resumes, careers, or documents...", key="chat_input")
+        if prompt:
+            st.session_state.chat_messages.append({"role": "user", "content": prompt})
+            response = chat_with_ai(prompt, st.session_state.chat_messages[:-1])
+            st.session_state.chat_messages.append({"role": "assistant", "content": response})
+            st.rerun()
+
+        st.markdown("""
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+else:
     pass
 
-# ── PROPOSAL ──────────────────────────────────────────────────────────────
-def generate_proposal_pdf(data):
-    # (same as before)
-    pass
-
-# ── EXPERIENCE LETTER ──────────────────────────────────────────────────────
-def generate_experience_letter_pdf(data):
-    # (same as before)
-    pass
+st.markdown("""
+<script>
+    function toggleChat() {
+        const chat = document.getElementById('chat-float');
+        if (chat) {
+            chat.classList.toggle('open');
+        }
+    }
+</script>
+""", unsafe_allow_html=True)
