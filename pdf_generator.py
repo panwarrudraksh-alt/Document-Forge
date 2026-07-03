@@ -1,6 +1,6 @@
 """
 pdf_generator.py – ResumeForge Pro
-Generates all documents: Resume, CV, Cover Letter, Proposal, Experience Letter.
+Uses canvas for reliable header background.
 """
 
 import io
@@ -9,7 +9,7 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 from reportlab.lib.units import mm
 from reportlab.platypus import (
-    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Flowable
 )
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT
@@ -42,7 +42,38 @@ def _style(name, font="Helvetica", size=10, color="#111111", leading=None, align
         spaceAfter=sa,
     )
 
-# ── RESUME GENERATOR (SIMPLIFIED HEADER) ──────────────────────────────────
+# ── CUSTOM HEADER FLOWABLE ──────────────────────────────────────────────────
+class HeaderBackground(Flowable):
+    """A flowable that draws a colored rectangle and then renders name/title/contact."""
+    def __init__(self, name, title, contact, color):
+        Flowable.__init__(self)
+        self.name = name
+        self.title = title
+        self.contact = contact
+        self.color = color
+        self.width = BODY_W
+        self.height = 60 * mm  # fixed height
+
+    def wrap(self, availWidth, availHeight):
+        return (self.width, self.height)
+
+    def draw(self):
+        c = self.canv
+        # Draw background
+        c.setFillColor(self.color)
+        c.rect(0, 0, self.width, self.height, stroke=0, fill=1)
+        # Draw text
+        c.setFillColor(colors.white)
+        c.setFont("Helvetica-Bold", 22)
+        c.drawCentredString(self.width/2, self.height - 18*mm, self.name)
+        if self.title:
+            c.setFont("Helvetica", 12)
+            c.drawCentredString(self.width/2, self.height - 32*mm, self.title)
+        if self.contact:
+            c.setFont("Helvetica", 9)
+            c.drawCentredString(self.width/2, self.height - 44*mm, self.contact)
+
+# ── RESUME GENERATOR ─────────────────────────────────────────────────────────
 def generate_resume_pdf(data):
     buf = io.BytesIO()
     theme = THEMES.get(data.get("theme", "Classic Green"), THEMES["Classic Green"])
@@ -58,8 +89,10 @@ def generate_resume_pdf(data):
 
     story = []
 
-    # ── HEADER (Simplified – no table, just paragraphs with background) ──
-    name = data.get("name", "Your Name").strip() or "Your Name"
+    # ── HEADER ──
+    name = data.get("name", "").strip()
+    if not name:
+        name = "Your Name (fill in Builder)"
     title = data.get("title", "").strip()
     email = data.get("email", "").strip()
     phone = data.get("phone", "").strip()
@@ -69,29 +102,8 @@ def generate_resume_pdf(data):
     contact_parts = [p for p in [email, phone, location, linkedin] if p]
     contact = " · ".join(contact_parts)
 
-    # Use a paragraph with background color – we'll wrap in a table just for background
-    # Actually, we can use a Table with one row and set background.
-    # But simpler: use a Table with cells that have background.
-    # I'll use a Table with a single row and cell background, but simpler: use a Paragraph with a Frame? No, Table is fine.
-    # Let's use a Table with one column and multiple rows.
-    hdr_data = []
-    hdr_data.append([Paragraph(name, _style("Name", "Helvetica-Bold", 22, colors.white, 28, align=TA_CENTER))])
-    if title:
-        hdr_data.append([Paragraph(title, _style("Title", size=12, color=colors.white, leading=16, align=TA_CENTER))])
-    if contact:
-        hdr_data.append([Paragraph(contact, _style("Contact", size=9, color=colors.white, leading=12, align=TA_CENTER))])
-
-    # Create the table with one column
-    hdr = Table(hdr_data, colWidths=[BODY_W])
-    hdr.setStyle(TableStyle([
-        ("BACKGROUND", (0,0), (-1,-1), PRIMARY),
-        ("TOPPADDING", (0,0), (-1,-1), 10),
-        ("BOTTOMPADDING", (0,0), (-1,-1), 10),
-        ("LEFTPADDING", (0,0), (-1,-1), 16),
-        ("RIGHTPADDING", (0,0), (-1,-1), 16),
-        ("ALIGN", (0,0), (-1,-1), "CENTER"),
-    ]))
-    story.append(hdr)
+    # Use custom header
+    story.append(HeaderBackground(name, title, contact, PRIMARY))
     story.append(Spacer(1, 6*mm))
 
     # ── Professional Summary ──
@@ -166,7 +178,7 @@ def generate_resume_pdf(data):
             if line.strip():
                 right_items.append(("BODY", line.strip()))
 
-    # Additional Experience (if any)
+    # Additional Experience
     add_exp = (data.get("add_exp", "") or "").strip()
     if add_exp:
         right_items.append(("SPACER", 10))
@@ -188,7 +200,6 @@ def generate_resume_pdf(data):
         elif kind == "BODY":
             return Paragraph(f"• {val}", _style("Body", size=9.5, color="#333333", leading=13))
         elif kind == "SKILL":
-            # Skill pill
             skill_style = _style("Skill", size=8.5, color=DARK, leading=11, align=TA_CENTER)
             pill = Table([[Paragraph(val, skill_style)]], colWidths=[col_w - 12])
             pill.setStyle(TableStyle([
@@ -204,7 +215,6 @@ def generate_resume_pdf(data):
     left_flows = [to_flowable(k, v, left_w) for k, v in left_items]
     right_flows = [to_flowable(k, v, right_w) for k, v in right_items]
 
-    # Pad to equal length
     n = max(len(left_flows), len(right_flows), 1)
     left_flows += [Spacer(1, 1)] * (n - len(left_flows))
     right_flows += [Spacer(1, 1)] * (n - len(right_flows))
