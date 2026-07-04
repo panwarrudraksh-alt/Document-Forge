@@ -651,6 +651,13 @@ elif page == "Builder":
     </div>
     """, unsafe_allow_html=True)
 
+    # ---- Debug: show current name ----
+    current_name = st.session_state.get("f_name", "")
+    if current_name:
+        st.success(f"✅ Current Name: **{current_name}**")
+    else:
+        st.warning("⚠️ Name is not set yet. Please fill in the Full Name below.")
+
     # Apply pending improvements
     if st.session_state.pending_improve_exp is not None:
         st.session_state.f_exp_desc = st.session_state.pending_improve_exp
@@ -774,12 +781,20 @@ elif page == "Resume":
     </div>
     """, unsafe_allow_html=True)
 
-    # ---- DEBUG: Show current name in session ----
+    # ---- Check if name is set ----
     current_name = st.session_state.get("f_name", "")
-    if current_name:
-        st.info(f"✅ Current Name in session: **{current_name}**")
+    if not current_name.strip():
+        st.error("⚠️ Please fill in your Full Name in the **Builder** page first.")
+        st.info("If you've already filled it, try refreshing the page or re‑entering the name.")
+        # Offer a direct input as fallback
+        st.markdown("---")
+        st.markdown("### Enter name directly")
+        fallback_name = st.text_input("Enter your full name:", key="resume_fallback_name")
+        if fallback_name:
+            st.session_state.f_name = fallback_name
+            st.success(f"Name set to: **{fallback_name}**. Click 'Generate Resume PDF' again.")
     else:
-        st.warning("⚠️ Name not set in session. Please go to the **Builder** page and fill in your Full Name.")
+        st.success(f"✅ Name loaded: **{current_name}**")
 
     col1, col2 = st.columns([2, 1])
     with col1:
@@ -790,9 +805,10 @@ elif page == "Resume":
         st.markdown("✅ Personal Info\n✅ Summary\n✅ Skills\n✅ Experience\n✅ Education\n✅ Projects")
 
     if st.button("📥 Generate Resume PDF", type="primary", use_container_width=True):
-        # Double-check name before generating
-        if not st.session_state.get("f_name", "").strip():
-            st.error("⚠️ Please fill in your Full Name in the Builder page before generating a resume.")
+        # Re‑check name (in case it was set via fallback)
+        name = st.session_state.get("f_name", "").strip()
+        if not name:
+            st.error("⚠️ Please enter your Full Name (either in Builder or using the fallback input above).")
         else:
             data = get_user_data()
             data["summary"] = st.session_state.get("resume_summary", "")
@@ -809,7 +825,7 @@ elif page == "Resume":
             else:
                 st.error("Failed to generate PDF. Check logs.")
 
-# ---- CV ----
+# ---- CV (unchanged) ----
 elif page == "CV":
     st.markdown("""
     <div class="doc-page">
@@ -847,7 +863,7 @@ elif page == "CV":
             else:
                 st.error("Failed to generate PDF.")
 
-# ---- COVER LETTER ----
+# ---- COVER LETTER (unchanged) ----
 elif page == "CoverLetter":
     st.markdown("""
     <div class="doc-page">
@@ -891,7 +907,7 @@ elif page == "CoverLetter":
         else:
             st.error("Failed to generate PDF.")
 
-# ---- PROPOSAL ----
+# ---- PROPOSAL (unchanged) ----
 elif page == "Proposal":
     st.markdown("""
     <div class="doc-page">
@@ -939,7 +955,7 @@ elif page == "Proposal":
         else:
             st.error("Failed to generate PDF.")
 
-# ---- EXPERIENCE LETTER ----
+# ---- EXPERIENCE LETTER (unchanged) ----
 elif page == "Experience":
     st.markdown("""
     <div class="doc-page">
@@ -990,7 +1006,7 @@ elif page == "Experience":
         else:
             st.error("Failed to generate PDF.")
 
-# ---- JOB SCRAPER ----
+# ---- JOB SCRAPER (unchanged) ----
 elif page == "JobScraper":
     st.markdown("""
     <div class="doc-page">
@@ -1032,7 +1048,7 @@ elif page == "JobScraper":
     else:
         st.info("No jobs found. Click 'Scrape Jobs' to search.")
 
-# ---- AI ASSISTANT ----
+# ---- AI ASSISTANT (unchanged) ----
 elif page == "AIAssistant":
     st.markdown("""
     <div class="doc-page">
