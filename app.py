@@ -774,6 +774,13 @@ elif page == "Resume":
     </div>
     """, unsafe_allow_html=True)
 
+    # ---- DEBUG: Show current name in session ----
+    current_name = st.session_state.get("f_name", "")
+    if current_name:
+        st.info(f"✅ Current Name in session: **{current_name}**")
+    else:
+        st.warning("⚠️ Name not set in session. Please go to the **Builder** page and fill in your Full Name.")
+
     col1, col2 = st.columns([2, 1])
     with col1:
         theme = st.selectbox("🎨 Theme", ["Classic Green", "Corporate Blue", "Creative Purple"], key="resume_theme")
@@ -783,6 +790,7 @@ elif page == "Resume":
         st.markdown("✅ Personal Info\n✅ Summary\n✅ Skills\n✅ Experience\n✅ Education\n✅ Projects")
 
     if st.button("📥 Generate Resume PDF", type="primary", use_container_width=True):
+        # Double-check name before generating
         if not st.session_state.get("f_name", "").strip():
             st.error("⚠️ Please fill in your Full Name in the Builder page before generating a resume.")
         else:
