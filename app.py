@@ -311,6 +311,26 @@ st.markdown("""
     .doc-page .header h1 { font-size: 2.2rem; font-weight: 800; color: var(--text-color); }
     .doc-page .header p { color: var(--text-light); font-size: 1.1rem; }
 
+    /* Info section on document pages */
+    .info-section {
+        background: var(--card-bg);
+        backdrop-filter: blur(8px);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        border: 1px solid var(--card-border);
+    }
+    .info-section summary {
+        font-weight: 700;
+        font-size: 1.2rem;
+        color: var(--text-color);
+        cursor: pointer;
+        padding: 0.5rem 0;
+    }
+    .info-section details {
+        padding: 0.5rem 0;
+    }
+
     .chat-float {
         position: fixed;
         bottom: 90px;
@@ -385,6 +405,7 @@ st.markdown("""
         .chat-float { width: 90vw; right: 5vw; }
         .about-section { flex-direction: column; text-align: center; }
         .support-section { padding: 1.5rem; }
+        .info-section { padding: 1rem; }
     }
 </style>
 """, unsafe_allow_html=True)
@@ -519,7 +540,93 @@ def get_user_data():
         "theme": "Classic Green",
     }
 
-# ==================== PAGES ====================
+# ---- Function to render the common info fields (used on each document page) ----
+def render_common_info():
+    """Render collapsible common information fields."""
+    with st.expander("📝 Your Information (edit here)", expanded=False):
+        st.markdown("Fill in your details. These will be used for all documents.")
+        col1, col2 = st.columns(2)
+        with col1:
+            st.text_input("Full Name *", key="f_name", placeholder="John Doe")
+            st.text_input("Email *", key="f_email", placeholder="john@example.com")
+            st.text_input("Phone", key="f_phone", placeholder="+1 234 567 890")
+        with col2:
+            st.text_input("Professional Title", key="f_title", placeholder="Software Engineer")
+            st.text_input("Location", key="f_loc", placeholder="San Francisco, CA")
+            st.text_input("LinkedIn URL", key="f_linkedin", placeholder="linkedin.com/in/john")
+
+        col1, col2 = st.columns(2)
+        with col1:
+            st.text_input("Company", key="f_company", placeholder="Tech Corp")
+            st.text_input("Role", key="f_exp_role", placeholder="Senior Developer")
+            st.text_input("Duration", key="f_duration", placeholder="Jan 2020 – Present")
+        with col2:
+            st.text_area("Job Description", key="f_exp_desc", placeholder="• Built REST APIs serving 10k users/day\n• Led team of 5 developers", height=120)
+            col_ai1, col_ai2 = st.columns([4, 1])
+            with col_ai2:
+                if st.button("✨ Improve", key="improve_exp_common"):
+                    try:
+                        improved = ai_suggest_improvements("job description", st.session_state.f_exp_desc)
+                        valid = safe_ai_response(improved)
+                        if valid is not None:
+                            st.session_state.pending_improve_exp = valid
+                            st.rerun()
+                        else:
+                            st.warning("AI suggestion failed.")
+                    except Exception as e:
+                        st.error(f"Error: {str(e)}")
+
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.text_input("Degree", key="f_degree", placeholder="B.Tech Computer Science")
+        with col2:
+            st.text_input("Institution", key="f_inst", placeholder="Stanford University")
+        with col3:
+            st.text_input("Year", key="f_year", placeholder="2016 – 2020")
+
+        st.text_area("Professional Summary", key="f_summary", placeholder="Experienced software engineer with 5+ years...", height=100)
+        col_ai1, col_ai2 = st.columns([4, 1])
+        with col_ai2:
+            if st.button("✨ Improve", key="improve_summary_common"):
+                try:
+                    improved = ai_suggest_improvements("professional summary", st.session_state.f_summary)
+                    valid = safe_ai_response(improved)
+                    if valid is not None:
+                        st.session_state.pending_improve_summary = valid
+                        st.rerun()
+                    else:
+                        st.warning("AI suggestion failed.")
+                except Exception as e:
+                    st.error(f"Error: {str(e)}")
+
+        st.text_area("Projects (one per line)", key="f_projects", placeholder="ResumeForge — AI resume builder\nTaskBot — Slack automation", height=100)
+
+        # Skills management
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            new_skill = st.text_input("Add a skill", key="skill_input_common", placeholder="Python, React, SQL...")
+        with col2:
+            if st.button("➕ Add", use_container_width=True) and new_skill.strip():
+                s = new_skill.strip().lower()
+                if s not in st.session_state.skills:
+                    st.session_state.skills.append(s)
+                st.rerun()
+
+        if st.session_state.skills:
+            st.markdown("**Your Skills:**")
+            cols = st.columns(6)
+            for i, sk in enumerate(st.session_state.skills):
+                with cols[i % 6]:
+                    if st.button(f"✕ {sk.title()}", key=f"rm_{sk}_common"):
+                        st.session_state.skills.remove(sk)
+                        st.rerun()
+        else:
+            st.info("No skills added yet.")
+
+        if st.button("💾 Save Information", type="primary", use_container_width=True):
+            st.success("✅ Information saved!")
+
+# ---- PAGES ----
 
 if page == "Home":
     st.markdown("""
@@ -640,7 +747,7 @@ if page == "Home":
         </div>
         """, unsafe_allow_html=True)
 
-# ---- BUILDER ----
+# ---- BUILDER (kept for users who prefer a dedicated page) ----
 elif page == "Builder":
     st.markdown("""
     <div class="doc-page">
@@ -651,18 +758,10 @@ elif page == "Builder":
     </div>
     """, unsafe_allow_html=True)
 
-    # ---- Debug: show current name ----
-    current_name = st.session_state.get("f_name", "")
-    if current_name:
-        st.success(f"✅ Current Name: **{current_name}**")
-    else:
-        st.warning("⚠️ Name is not set yet. Please fill in the Full Name below.")
-
     # Apply pending improvements
     if st.session_state.pending_improve_exp is not None:
         st.session_state.f_exp_desc = st.session_state.pending_improve_exp
         st.session_state.pending_improve_exp = None
-
     if st.session_state.pending_improve_summary is not None:
         st.session_state.f_summary = st.session_state.pending_improve_summary
         st.session_state.pending_improve_summary = None
@@ -698,9 +797,9 @@ elif page == "Builder":
                         st.session_state.pending_improve_exp = valid
                         st.rerun()
                     else:
-                        st.warning("AI suggestion returned an error. Please try again or check your API key.")
+                        st.warning("AI suggestion returned an error.")
                 except Exception as e:
-                    st.error(f"An error occurred: {str(e)}")
+                    st.error(f"Error: {str(e)}")
 
     with tabs[2]:
         col1, col2, col3 = st.columns(3)
@@ -734,9 +833,9 @@ elif page == "Builder":
                             st.session_state.skills.append(sk)
                     st.rerun()
                 else:
-                    st.warning("Could not get skill suggestions. Please try again.")
+                    st.warning("Could not get skill suggestions.")
             except Exception as e:
-                st.error(f"An error occurred: {str(e)}")
+                st.error(f"Error: {str(e)}")
 
         if st.session_state.skills:
             st.markdown("**Your Skills:**")
@@ -763,9 +862,9 @@ elif page == "Builder":
                         st.session_state.pending_improve_summary = valid
                         st.rerun()
                     else:
-                        st.warning("AI suggestion returned an error. Please try again or check your API key.")
+                        st.warning("AI suggestion returned an error.")
                 except Exception as e:
-                    st.error(f"An error occurred: {str(e)}")
+                    st.error(f"Error: {str(e)}")
 
     if st.button("💾 Save Information", type="primary", use_container_width=True):
         st.success("✅ All information saved!")
@@ -781,20 +880,8 @@ elif page == "Resume":
     </div>
     """, unsafe_allow_html=True)
 
-    # ---- Check if name is set ----
-    current_name = st.session_state.get("f_name", "")
-    if not current_name.strip():
-        st.error("⚠️ Please fill in your Full Name in the **Builder** page first.")
-        st.info("If you've already filled it, try refreshing the page or re‑entering the name.")
-        # Offer a direct input as fallback
-        st.markdown("---")
-        st.markdown("### Enter name directly")
-        fallback_name = st.text_input("Enter your full name:", key="resume_fallback_name")
-        if fallback_name:
-            st.session_state.f_name = fallback_name
-            st.success(f"Name set to: **{fallback_name}**. Click 'Generate Resume PDF' again.")
-    else:
-        st.success(f"✅ Name loaded: **{current_name}**")
+    # Common info section
+    render_common_info()
 
     col1, col2 = st.columns([2, 1])
     with col1:
@@ -805,10 +892,9 @@ elif page == "Resume":
         st.markdown("✅ Personal Info\n✅ Summary\n✅ Skills\n✅ Experience\n✅ Education\n✅ Projects")
 
     if st.button("📥 Generate Resume PDF", type="primary", use_container_width=True):
-        # Re‑check name (in case it was set via fallback)
         name = st.session_state.get("f_name", "").strip()
         if not name:
-            st.error("⚠️ Please enter your Full Name (either in Builder or using the fallback input above).")
+            st.error("⚠️ Please fill in your Full Name in the 'Your Information' section above.")
         else:
             data = get_user_data()
             data["summary"] = st.session_state.get("resume_summary", "")
@@ -825,7 +911,7 @@ elif page == "Resume":
             else:
                 st.error("Failed to generate PDF. Check logs.")
 
-# ---- CV (unchanged) ----
+# ---- CV ----
 elif page == "CV":
     st.markdown("""
     <div class="doc-page">
@@ -836,6 +922,8 @@ elif page == "CV":
     </div>
     """, unsafe_allow_html=True)
 
+    render_common_info()
+
     col1, col2 = st.columns([2, 1])
     with col1:
         cv_theme = st.selectbox("🎨 Theme", ["Classic Green", "Corporate Blue", "Creative Purple"], key="cv_theme")
@@ -845,8 +933,9 @@ elif page == "CV":
         st.markdown("✅ Personal Info\n✅ Summary\n✅ Skills\n✅ Experience\n✅ Education\n✅ Publications\n✅ Projects")
 
     if st.button("📥 Generate CV PDF", type="primary", use_container_width=True):
-        if not st.session_state.get("f_name", "").strip():
-            st.error("⚠️ Please fill in your Full Name in the Builder page first.")
+        name = st.session_state.get("f_name", "").strip()
+        if not name:
+            st.error("⚠️ Please fill in your Full Name above.")
         else:
             data = get_user_data()
             data["publications"] = st.session_state.get("cv_publications", "")
@@ -863,7 +952,7 @@ elif page == "CV":
             else:
                 st.error("Failed to generate PDF.")
 
-# ---- COVER LETTER (unchanged) ----
+# ---- COVER LETTER ----
 elif page == "CoverLetter":
     st.markdown("""
     <div class="doc-page">
@@ -873,6 +962,8 @@ elif page == "CoverLetter":
         </div>
     </div>
     """, unsafe_allow_html=True)
+
+    render_common_info()
 
     col1, col2 = st.columns([2, 1])
     with col1:
@@ -889,25 +980,29 @@ elif page == "CoverLetter":
         st.markdown("✅ Sender Info\n✅ Date\n✅ Recipient\n✅ Salutation\n✅ Body\n✅ Closing\n✅ Signature")
 
     if st.button("📥 Generate Cover Letter PDF", type="primary", use_container_width=True):
-        data = get_user_data()
-        data["cover_company"] = st.session_state.get("cover_company", "")
-        data["cover_position"] = st.session_state.get("cover_position", "")
-        data["cover_recruiter"] = st.session_state.get("cover_recruiter", "")
-        data["cover_custom"] = st.session_state.get("cover_custom", "")
-        data["theme"] = st.session_state.get("cover_theme", "Classic Green")
-        pdf = generate_cover_letter_pdf(data)
-        if pdf:
-            st.download_button(
-                label="⬇️ Download PDF",
-                data=pdf,
-                file_name=f"{data['name'].replace(' ', '_')}_Cover_Letter.pdf",
-                mime="application/pdf",
-                use_container_width=True
-            )
+        name = st.session_state.get("f_name", "").strip()
+        if not name:
+            st.error("⚠️ Please fill in your Full Name above.")
         else:
-            st.error("Failed to generate PDF.")
+            data = get_user_data()
+            data["cover_company"] = st.session_state.get("cover_company", "")
+            data["cover_position"] = st.session_state.get("cover_position", "")
+            data["cover_recruiter"] = st.session_state.get("cover_recruiter", "")
+            data["cover_custom"] = st.session_state.get("cover_custom", "")
+            data["theme"] = st.session_state.get("cover_theme", "Classic Green")
+            pdf = generate_cover_letter_pdf(data)
+            if pdf:
+                st.download_button(
+                    label="⬇️ Download PDF",
+                    data=pdf,
+                    file_name=f"{data['name'].replace(' ', '_')}_Cover_Letter.pdf",
+                    mime="application/pdf",
+                    use_container_width=True
+                )
+            else:
+                st.error("Failed to generate PDF.")
 
-# ---- PROPOSAL (unchanged) ----
+# ---- PROPOSAL ----
 elif page == "Proposal":
     st.markdown("""
     <div class="doc-page">
@@ -917,6 +1012,8 @@ elif page == "Proposal":
         </div>
     </div>
     """, unsafe_allow_html=True)
+
+    render_common_info()
 
     col1, col2 = st.columns([2, 1])
     with col1:
@@ -935,27 +1032,31 @@ elif page == "Proposal":
         st.markdown("✅ Title\n✅ Client Info\n✅ Executive Summary\n✅ Approach\n✅ About Us\n✅ Contact")
 
     if st.button("📥 Generate Proposal PDF", type="primary", use_container_width=True):
-        data = get_user_data()
-        data["proposal_title"] = st.session_state.get("prop_title", "")
-        data["proposal_client"] = st.session_state.get("prop_client", "")
-        data["proposal_budget"] = st.session_state.get("prop_budget", "")
-        data["proposal_timeline"] = st.session_state.get("prop_timeline", "")
-        data["proposal_summary"] = st.session_state.get("prop_summary", "")
-        data["proposal_approach"] = st.session_state.get("prop_approach", "")
-        data["theme"] = st.session_state.get("prop_theme", "Classic Green")
-        pdf = generate_proposal_pdf(data)
-        if pdf:
-            st.download_button(
-                label="⬇️ Download PDF",
-                data=pdf,
-                file_name=f"{data['name'].replace(' ', '_')}_Proposal.pdf",
-                mime="application/pdf",
-                use_container_width=True
-            )
+        name = st.session_state.get("f_name", "").strip()
+        if not name:
+            st.error("⚠️ Please fill in your Full Name above.")
         else:
-            st.error("Failed to generate PDF.")
+            data = get_user_data()
+            data["proposal_title"] = st.session_state.get("prop_title", "")
+            data["proposal_client"] = st.session_state.get("prop_client", "")
+            data["proposal_budget"] = st.session_state.get("prop_budget", "")
+            data["proposal_timeline"] = st.session_state.get("prop_timeline", "")
+            data["proposal_summary"] = st.session_state.get("prop_summary", "")
+            data["proposal_approach"] = st.session_state.get("prop_approach", "")
+            data["theme"] = st.session_state.get("prop_theme", "Classic Green")
+            pdf = generate_proposal_pdf(data)
+            if pdf:
+                st.download_button(
+                    label="⬇️ Download PDF",
+                    data=pdf,
+                    file_name=f"{data['name'].replace(' ', '_')}_Proposal.pdf",
+                    mime="application/pdf",
+                    use_container_width=True
+                )
+            else:
+                st.error("Failed to generate PDF.")
 
-# ---- EXPERIENCE LETTER (unchanged) ----
+# ---- EXPERIENCE LETTER ----
 elif page == "Experience":
     st.markdown("""
     <div class="doc-page">
@@ -965,6 +1066,8 @@ elif page == "Experience":
         </div>
     </div>
     """, unsafe_allow_html=True)
+
+    render_common_info()
 
     col1, col2 = st.columns([2, 1])
     with col1:
@@ -1006,7 +1109,7 @@ elif page == "Experience":
         else:
             st.error("Failed to generate PDF.")
 
-# ---- JOB SCRAPER (unchanged) ----
+# ---- JOB SCRAPER ----
 elif page == "JobScraper":
     st.markdown("""
     <div class="doc-page">
@@ -1048,7 +1151,7 @@ elif page == "JobScraper":
     else:
         st.info("No jobs found. Click 'Scrape Jobs' to search.")
 
-# ---- AI ASSISTANT (unchanged) ----
+# ---- AI ASSISTANT ----
 elif page == "AIAssistant":
     st.markdown("""
     <div class="doc-page">
