@@ -68,9 +68,9 @@ _ICON_ARROW = "M5 12h14M13 6l6 6-6 6"
 _ICON_SPARK = _NAV_ICONS[8]
 
 
-def _icon_uri(path_d):
+def _icon_uri(path_d, stroke="black"):
     svg = (
-        "%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' "
+        "%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='" + stroke + "' "
         "stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E"
         "%3Cpath d='" + path_d + "'/%3E%3C/svg%3E"
     )
@@ -78,10 +78,22 @@ def _icon_uri(path_d):
 
 
 def _nav_icon_css():
-    rules = [
-        '[data-testid="stSidebar"] [role="radiogroup"] > label:nth-child(%d) { --ico: %s; }' % (i, _icon_uri(d))
-        for i, d in enumerate(_NAV_ICONS, start=1)
-    ]
+    # Each icon is a ::before that exists only where its selector matches the option row. If Streamlit's markup differs
+    # from what is expected, the nav falls back to plain text (no empty boxes). Both a direct and a wrapped <label> form
+    # are listed because Streamlit versions differ.
+    rg = '[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"]'
+    rules = []
+    for i, d in enumerate(_NAV_ICONS, start=1):
+        muted, bright = _icon_uri(d, "%23aeb6c3"), _icon_uri(d, "%23ffffff")
+        sel = ["%s > label:nth-child(%d)" % (rg, i), "%s > :nth-child(%d) > label" % (rg, i)]
+        rules.append(
+            ", ".join(s + "::before" for s in sel)
+            + " { content: ''; flex: none; width: 20px; height: 20px; background: %s center / contain no-repeat; }" % muted
+        )
+        rules.append(
+            ", ".join(s + ":hover::before, " + s + ":has(input:checked)::before" for s in sel)
+            + " { background-image: %s; }" % bright
+        )
     return "\n".join(rules)
 
 
@@ -133,23 +145,19 @@ html { scroll-behavior: smooth; }
 .stApp .brand-sub { font-size: 0.8125rem; color: var(--rail-muted); margin-top: 2px; }
 
 [data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] { gap: 2px; }
-[data-testid="stSidebar"] [data-testid="stRadio"] label {
+/* Only the option rows (label[data-baseweb="radio"]) are styled, never the widget's own hidden "Navigate" label. */
+[data-testid="stSidebar"] [data-testid="stRadio"] label[data-baseweb="radio"] {
     display: flex; align-items: center; gap: 0.75rem; width: 100%; margin: 0;
     padding: 0.6rem 0.75rem; border-radius: 6px; cursor: pointer;
     transition: background-color 0.15s ease, color 0.15s ease;
 }
-[data-testid="stSidebar"] [data-testid="stRadio"] label > div:not([data-testid="stMarkdownContainer"]) { display: none; }
-[data-testid="stSidebar"] [data-testid="stRadio"] label p { margin: 0; font-size: 0.95rem; font-weight: 500; color: var(--rail-muted); line-height: 1.3; }
-[data-testid="stSidebar"] [data-testid="stRadio"] label::before {
-    content: ""; flex: none; width: 20px; height: 20px; background-color: var(--rail-muted);
-    -webkit-mask: var(--ico) center / contain no-repeat; mask: var(--ico) center / contain no-repeat;
-}
-[data-testid="stSidebar"] [data-testid="stRadio"] label:hover { background: var(--rail-hover); }
-[data-testid="stSidebar"] [data-testid="stRadio"] label:hover p { color: var(--rail-ink); }
-[data-testid="stSidebar"] [data-testid="stRadio"] label:hover::before { background-color: var(--rail-ink); }
-[data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked) { background: #c4006a; }
-[data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked) p { color: #ffffff; font-weight: 700; }
-[data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked)::before { background-color: #ffffff; }
+/* Hide only the round radio dot: a direct child that does not hold the option text (the text may or may not be wrapped). */
+[data-testid="stSidebar"] [data-testid="stRadio"] label[data-baseweb="radio"] > :is(div, span):not([data-testid="stMarkdownContainer"]):not(:has([data-testid="stMarkdownContainer"])) { display: none; }
+[data-testid="stSidebar"] [data-testid="stRadio"] label[data-baseweb="radio"] p { margin: 0; font-size: 0.95rem; font-weight: 500; color: var(--rail-muted); line-height: 1.3; }
+[data-testid="stSidebar"] [data-testid="stRadio"] label[data-baseweb="radio"]:hover { background: var(--rail-hover); }
+[data-testid="stSidebar"] [data-testid="stRadio"] label[data-baseweb="radio"]:hover p { color: var(--rail-ink); }
+[data-testid="stSidebar"] [data-testid="stRadio"] label[data-baseweb="radio"]:has(input:checked) { background: #c4006a; }
+[data-testid="stSidebar"] [data-testid="stRadio"] label[data-baseweb="radio"]:has(input:checked) p { color: #ffffff; font-weight: 700; }
 __NAV_ICONS__
 
 [data-testid="stSidebar"] [data-testid="stMetric"] { background: transparent; border: 1px solid var(--rail-line); border-radius: 8px; padding: 0.6rem 0.75rem; }
@@ -400,14 +408,6 @@ with st.sidebar:
     st.markdown("---")
 
     page_choices = ["Home", "Builder", "Resume", "CV", "Cover Letter", "Proposal", "Experience", "Job Scraper", "AI Assistant"]
-    current_index = page_choices.index([p for p in page_choices if p.split(" ")[-1] == st.session_state.page][0]) if any(p.split(" ")[-1] == st.session_state.page for p in page_choices) else 0
-
-    selected = st.radio(
-        "Navigate",
-        page_choices,
-        index=current_index,
-        label_visibility="collapsed"
-    )
     page_map = {
         "Home": "Home",
         "Builder": "Builder",
@@ -419,6 +419,24 @@ with st.sidebar:
         "Job Scraper": "JobScraper",
         "AI Assistant": "AIAssistant"
     }
+
+    # Navigation fix: the radio now has a fixed key, so Streamlit no longer treats it as a brand-new widget (and drops
+    # the click) every time the page changes. A click updates the page through the callback; when the page was changed
+    # by go_to_page() (the Home cards), the radio is brought in line before it is drawn.
+    def _on_nav_change():
+        st.session_state.page = page_map[st.session_state.nav_radio]
+
+    _page_labels = {v: k for k, v in page_map.items()}
+    if st.session_state.get("nav_radio") != _page_labels.get(st.session_state.page):
+        st.session_state.nav_radio = _page_labels.get(st.session_state.page, "Home")
+
+    selected = st.radio(
+        "Navigate",
+        page_choices,
+        key="nav_radio",
+        on_change=_on_nav_change,
+        label_visibility="collapsed"
+    )
     if selected:
         st.session_state.page = page_map[selected]
 
@@ -1205,4 +1223,3 @@ if st.session_state.show_chat:
         """, unsafe_allow_html=True)
 else:
     pass
-
