@@ -145,19 +145,19 @@ html { scroll-behavior: smooth; }
 .stApp .brand-sub { font-size: 0.8125rem; color: var(--rail-muted); margin-top: 2px; }
 
 [data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] { gap: 2px; }
-/* Only the option rows (label[data-baseweb="radio"]) are styled, never the widget's own hidden "Navigate" label. */
-[data-testid="stSidebar"] [data-testid="stRadio"] label[data-baseweb="radio"] {
+/* Only the option rows (label:not([data-testid="stWidgetLabel"])) are styled, never the widget's own hidden "Navigate" label. */
+[data-testid="stSidebar"] [data-testid="stRadio"] label:not([data-testid="stWidgetLabel"]) {
     display: flex; align-items: center; gap: 0.75rem; width: 100%; margin: 0;
     padding: 0.6rem 0.75rem; border-radius: 6px; cursor: pointer;
     transition: background-color 0.15s ease, color 0.15s ease;
 }
 /* Hide only the round radio dot: a direct child that does not hold the option text (the text may or may not be wrapped). */
-[data-testid="stSidebar"] [data-testid="stRadio"] label[data-baseweb="radio"] > :is(div, span):not([data-testid="stMarkdownContainer"]):not(:has([data-testid="stMarkdownContainer"])) { display: none; }
-[data-testid="stSidebar"] [data-testid="stRadio"] label[data-baseweb="radio"] p { margin: 0; font-size: 0.95rem; font-weight: 500; color: var(--rail-muted); line-height: 1.3; }
-[data-testid="stSidebar"] [data-testid="stRadio"] label[data-baseweb="radio"]:hover { background: var(--rail-hover); }
-[data-testid="stSidebar"] [data-testid="stRadio"] label[data-baseweb="radio"]:hover p { color: var(--rail-ink); }
-[data-testid="stSidebar"] [data-testid="stRadio"] label[data-baseweb="radio"]:has(input:checked) { background: #c4006a; }
-[data-testid="stSidebar"] [data-testid="stRadio"] label[data-baseweb="radio"]:has(input:checked) p { color: #ffffff; font-weight: 700; }
+[data-testid="stSidebar"] [data-testid="stRadio"] label:not([data-testid="stWidgetLabel"]) > :is(div, span):not([data-testid="stMarkdownContainer"]):not(:has([data-testid="stMarkdownContainer"])) { display: none; }
+[data-testid="stSidebar"] [data-testid="stRadio"] label:not([data-testid="stWidgetLabel"]) p { margin: 0; font-size: 0.95rem; font-weight: 500; color: var(--rail-muted); line-height: 1.3; }
+[data-testid="stSidebar"] [data-testid="stRadio"] label:not([data-testid="stWidgetLabel"]):hover { background: var(--rail-hover); }
+[data-testid="stSidebar"] [data-testid="stRadio"] label:not([data-testid="stWidgetLabel"]):hover p { color: var(--rail-ink); }
+[data-testid="stSidebar"] [data-testid="stRadio"] label:not([data-testid="stWidgetLabel"]):has(input:checked) { background: #c4006a; }
+[data-testid="stSidebar"] [data-testid="stRadio"] label:not([data-testid="stWidgetLabel"]):has(input:checked) p { color: #ffffff; font-weight: 700; }
 __NAV_ICONS__
 
 [data-testid="stSidebar"] [data-testid="stMetric"] { background: transparent; border: 1px solid var(--rail-line); border-radius: 8px; padding: 0.6rem 0.75rem; }
@@ -259,23 +259,33 @@ __NAV_ICONS__
 
 /* ---------- native widgets ---------- */
 .stApp [data-testid="stWidgetLabel"] :is(p, label, span) { color: var(--ink); font-weight: 600; font-size: 0.875rem; }
-.stApp :is([data-baseweb="input"], [data-baseweb="base-input"], [data-baseweb="textarea"]) { background: var(--field) !important; border-radius: 6px !important; }
-.stApp :is([data-baseweb="input"], [data-baseweb="textarea"]) { border: 1px solid var(--line-strong) !important; }
-.stApp [data-baseweb="select"] > div { background: var(--field) !important; border: 1px solid var(--line-strong) !important; border-radius: 6px !important; }
-.stApp :is([data-baseweb="input"], [data-baseweb="textarea"], [data-baseweb="select"] > div):focus-within { border-color: var(--acc-text) !important; box-shadow: 0 0 0 1px var(--acc-text) !important; }
-/* The text elements must not paint their own (Streamlit-theme) background: the themed box around them provides it.
-   Without this, in dark mode the typed text is light-on-light and disappears. */
-.stApp :is(input, textarea) { background: transparent !important; color: var(--ink) !important; -webkit-text-fill-color: var(--ink) !important; caret-color: var(--acc-text); }
+/* Text fields. Written so it does not depend on Streamlit's internal markup (data-baseweb, emotion class names): the
+   <input>/<textarea> element ITSELF paints both the box and the text colour, so the two can never end up light-on-light
+   or dark-on-dark, whatever Streamlit's own theme paints underneath. */
+.stApp :is(input, textarea):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([role="combobox"]):not([aria-autocomplete]) {
+    background: var(--field) !important; color: var(--ink) !important; -webkit-text-fill-color: var(--ink) !important;
+    caret-color: var(--acc-text); border: 1px solid var(--line-strong) !important; border-radius: 6px !important;
+    box-shadow: none !important; outline: none !important;
+}
+.stApp :is(input, textarea):not([type="checkbox"]):not([type="radio"]):not([role="combobox"]):not([aria-autocomplete]):focus {
+    border-color: var(--acc-text) !important; box-shadow: 0 0 0 1px var(--acc-text) !important;
+}
 .stApp :is(input, textarea):-webkit-autofill { -webkit-box-shadow: 0 0 0 1000px var(--field) inset !important; -webkit-text-fill-color: var(--ink) !important; caret-color: var(--acc-text); }
 .stApp :is(input, textarea)::placeholder { color: var(--ink-3) !important; -webkit-text-fill-color: var(--ink-3) !important; opacity: 1; }
-.stApp [data-baseweb="select"] > div * { background: transparent !important; }
-.stApp [data-baseweb="select"] :is(div, span, input) { color: var(--ink) !important; -webkit-text-fill-color: var(--ink) !important; }
-.stApp [data-baseweb="select"] svg { fill: var(--ink-2) !important; }
-div[data-baseweb="popover"] > div, div[data-baseweb="popover"] [data-baseweb="menu"] { background: var(--surface) !important; }
-div[data-baseweb="popover"] :is(ul, [role="listbox"]) { background: var(--surface) !important; }
-div[data-baseweb="popover"] li { background: transparent; color: var(--ink) !important; }
-div[data-baseweb="popover"] li * { color: var(--ink) !important; background: transparent !important; }
-div[data-baseweb="popover"] li:is(:hover, [aria-selected="true"]) { background: var(--surface-2) !important; }
+/* Whatever Streamlit wraps around a text field (its own box, inner layer, focus ring) is made invisible so only our field shows. */
+.stApp :is([data-testid="stTextInput"], [data-testid="stTextArea"], [data-testid="stNumberInput"]) :is(div, span):has(> :is(input, textarea)),
+.stApp :is([data-testid="stTextInput"], [data-testid="stTextArea"], [data-testid="stNumberInput"]) :is(div, span):has(> :is(div, span) > :is(input, textarea)) {
+    background: transparent !important; border-color: transparent !important; box-shadow: none !important;
+}
+/* Selectbox: the control (the box after the label) is repainted as one piece, box and text together. If the markup is
+   not recognised nothing here matches and Streamlit's own selectbox stays fully native and readable. */
+.stApp [data-testid="stSelectbox"] label ~ div { background: var(--field) !important; border: 1px solid var(--line-strong) !important; border-radius: 6px !important; }
+.stApp [data-testid="stSelectbox"] label ~ div :is(div, span, input, p) { background: transparent !important; color: var(--ink) !important; -webkit-text-fill-color: var(--ink) !important; border-color: transparent !important; box-shadow: none !important; }
+.stApp [data-testid="stSelectbox"] label ~ div svg { fill: var(--ink-2) !important; color: var(--ink-2) !important; }
+/* Dropdown list: one dark panel, every layer inside transparent, every text ink-coloured, so no layer can be light-on-light. */
+div[data-baseweb="popover"], div[data-baseweb="popover"] > div { background: var(--surface) !important; }
+div[data-baseweb="popover"] * { background: transparent !important; color: var(--ink) !important; -webkit-text-fill-color: var(--ink) !important; }
+div[data-baseweb="popover"] :is(li, [role="option"]):is(:hover, [aria-selected="true"]) { background: var(--surface-2) !important; }
 
 .stApp :is(.stButton, .stDownloadButton) > button {
     min-height: 2.75rem; border-radius: 6px; font-weight: 600; box-shadow: none;
@@ -305,13 +315,15 @@ div[data-baseweb="popover"] li:is(:hover, [aria-selected="true"]) { background: 
 .stApp [class*="st-key-rm_"] button:hover { background: var(--cyan); color: #101318; }
 .stApp [class*="st-key-rm_"] button:hover p { color: #101318; }
 
-.stApp [data-baseweb="tab-list"] { gap: 0.25rem; }
-.stApp button[data-baseweb="tab"] { background: transparent; padding: 0.75rem 1rem; }
-.stApp button[data-baseweb="tab"] p { color: var(--ink-2); font-weight: 600; }
-.stApp button[data-baseweb="tab"][aria-selected="true"] p { color: var(--ink); }
-.stApp button[data-baseweb="tab"]:hover p { color: var(--ink); }
-.stApp [data-baseweb="tab-highlight"] { background: var(--acc) !important; height: 3px !important; }
-.stApp [data-baseweb="tab-border"] { background: var(--line) !important; }
+/* Tabs, matched by ARIA role (stable across Streamlit versions) rather than internal attributes. */
+.stApp [role="tablist"] { gap: 0.25rem; }
+.stApp [role="tab"] { background: transparent !important; padding: 0.75rem 1rem; }
+.stApp [role="tab"], .stApp [role="tab"] :is(p, span, div) { color: var(--ink-2) !important; font-weight: 600; }
+.stApp [role="tab"]:hover, .stApp [role="tab"]:hover :is(p, span, div) { color: var(--ink) !important; }
+.stApp [role="tab"][aria-selected="true"], .stApp [role="tab"][aria-selected="true"] :is(p, span, div) { color: var(--ink) !important; }
+/* the moving underline and the rule under the tab row: found by position because their class names vary */
+.stApp :is([data-baseweb="tab-highlight"], [role="tablist"] > :not([role="tab"]):nth-last-child(2)) { background: var(--acc) !important; height: 3px !important; }
+.stApp :is([data-baseweb="tab-border"], [role="tablist"] > :not([role="tab"]):last-child) { background: var(--line) !important; }
 
 .stApp [data-testid="stExpander"] { margin-bottom: 0.5rem; }
 .stApp [data-testid="stExpander"] details { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
