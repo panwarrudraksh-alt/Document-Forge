@@ -263,11 +263,18 @@ __NAV_ICONS__
 .stApp :is([data-baseweb="input"], [data-baseweb="textarea"]) { border: 1px solid var(--line-strong) !important; }
 .stApp [data-baseweb="select"] > div { background: var(--field) !important; border: 1px solid var(--line-strong) !important; border-radius: 6px !important; }
 .stApp :is([data-baseweb="input"], [data-baseweb="textarea"], [data-baseweb="select"] > div):focus-within { border-color: var(--acc-text) !important; box-shadow: 0 0 0 1px var(--acc-text) !important; }
-.stApp :is(input, textarea) { color: var(--ink) !important; -webkit-text-fill-color: var(--ink); caret-color: var(--acc-text); }
-.stApp :is(input, textarea)::placeholder { color: var(--ink-3) !important; -webkit-text-fill-color: var(--ink-3); opacity: 1; }
-.stApp [data-baseweb="select"] :is(div, span) { color: var(--ink); }
+/* The text elements must not paint their own (Streamlit-theme) background: the themed box around them provides it.
+   Without this, in dark mode the typed text is light-on-light and disappears. */
+.stApp :is(input, textarea) { background: transparent !important; color: var(--ink) !important; -webkit-text-fill-color: var(--ink) !important; caret-color: var(--acc-text); }
+.stApp :is(input, textarea):-webkit-autofill { -webkit-box-shadow: 0 0 0 1000px var(--field) inset !important; -webkit-text-fill-color: var(--ink) !important; caret-color: var(--acc-text); }
+.stApp :is(input, textarea)::placeholder { color: var(--ink-3) !important; -webkit-text-fill-color: var(--ink-3) !important; opacity: 1; }
+.stApp [data-baseweb="select"] > div * { background: transparent !important; }
+.stApp [data-baseweb="select"] :is(div, span, input) { color: var(--ink) !important; -webkit-text-fill-color: var(--ink) !important; }
+.stApp [data-baseweb="select"] svg { fill: var(--ink-2) !important; }
+div[data-baseweb="popover"] > div, div[data-baseweb="popover"] [data-baseweb="menu"] { background: var(--surface) !important; }
 div[data-baseweb="popover"] :is(ul, [role="listbox"]) { background: var(--surface) !important; }
 div[data-baseweb="popover"] li { background: transparent; color: var(--ink) !important; }
+div[data-baseweb="popover"] li * { color: var(--ink) !important; background: transparent !important; }
 div[data-baseweb="popover"] li:is(:hover, [aria-selected="true"]) { background: var(--surface-2) !important; }
 
 .stApp :is(.stButton, .stDownloadButton) > button {
