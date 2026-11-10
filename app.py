@@ -669,6 +669,70 @@ div[data-baseweb="popover"], div[data-baseweb="popover"] > div {
 .stApp .about { animation-delay: 0.2s; }
 .stApp .sec-head { animation-delay: 0.15s; }
 
+/* ================= Water Ripple Effect ================= */
+/* Give buttons the ability to splash outside their bounds */
+.stApp :is(.stButton, .stDownloadButton) > button {
+    position: relative;
+    z-index: 1;
+    overflow: visible;
+}
+
+/* The wave and the ring */
+.stApp :is(.stButton, .stDownloadButton) > button::before,
+.stApp :is(.stButton, .stDownloadButton) > button::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100px;
+    height: 100px;
+    margin: -50px 0 0 -50px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: -1;
+    opacity: 0;
+    transform: scale(0);
+}
+
+/* Outer wave (soft gradient) */
+.stApp :is(.stButton, .stDownloadButton) > button::after {
+    background: radial-gradient(circle, rgba(255,255,255,0.7) 0%, color-mix(in srgb, var(--acc) 45%, transparent) 30%, transparent 60%);
+}
+
+/* Inner ring (glowing border) */
+.stApp :is(.stButton, .stDownloadButton) > button::before {
+    border: 2px solid color-mix(in srgb, var(--acc) 80%, white);
+    box-shadow: 0 0 15px color-mix(in srgb, var(--acc) 50%, transparent), inset 0 0 10px color-mix(in srgb, var(--acc) 50%, transparent);
+}
+
+/* Trigger the water drop on click */
+.stApp :is(.stButton, .stDownloadButton) > button:active::after {
+    animation: waterFill 0.8s var(--ease-bounce) forwards;
+}
+
+.stApp :is(.stButton, .stDownloadButton) > button:active::before {
+    animation: waterRing 0.8s var(--ease-bounce) forwards;
+}
+
+/* Exclude Home Feature list buttons so they don't break */
+.stApp [class*="st-key-home_feature_"] .stButton > button {
+    overflow: hidden;
+}
+.stApp [class*="st-key-home_feature_"] .stButton > button::after,
+.stApp [class*="st-key-home_feature_"] .stButton > button::before {
+    display: none;
+}
+
+@keyframes waterFill {
+    0% { transform: scale(0.5); opacity: 0.8; }
+    100% { transform: scale(4); opacity: 0; }
+}
+
+@keyframes waterRing {
+    0% { transform: scale(0.5); opacity: 1; border-width: 4px; }
+    100% { transform: scale(3); opacity: 0; border-width: 1px; }
+}
+
 @media (max-width: 768px) {
     .stApp .about { grid-template-columns: 1fr; padding: 1.25rem; }
     .stApp .slip { margin: 1.25rem 0.5rem 0.5rem; }
