@@ -96,9 +96,6 @@ def _icon_uri(path_d, stroke="black"):
 
 
 def _nav_icon_css():
-    # Each icon is a ::before that exists only where its selector matches the option row. If Streamlit's markup differs
-    # from what is expected, the nav falls back to plain text (no empty boxes). Both a direct and a wrapped <label> form
-    # are listed because Streamlit versions differ.
     rg = '[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"]'
     rules = []
     for i, d in enumerate(_NAV_ICONS, start=1):
@@ -124,6 +121,8 @@ _CSS_BASE = """
     --ico-check: __ICO_CHECK__;
     --ico-arrow: __ICO_ARROW__;
     --ico-spark: __ICO_SPARK__;
+    --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 /* ---------- base ---------- */
@@ -138,6 +137,7 @@ html, body { background-color: var(--ground); }
         radial-gradient(900px 860px at 48% 118%, var(--ambient-3), transparent 62%);
     background-repeat: no-repeat;
     background-attachment: fixed;
+    transition: background-color 0.4s var(--ease-spring), color 0.4s var(--ease-spring);
 }
 .stApp, .stApp :is(p, li, h1, h2, h3, h4, h5, h6, label, input, textarea, button, a, td, th, summary, small, strong, em) {
     font-family: 'Archivo', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
@@ -166,15 +166,16 @@ html, body { background-color: var(--ground); }
     backdrop-filter: blur(26px) saturate(180%);
     border-right: 1px solid var(--glass-border);
     box-shadow: inset -1px 0 0 rgba(255,255,255,0.06);
+    transition: background-color 0.4s var(--ease-spring), border-color 0.4s var(--ease-spring);
 }
 [data-testid="stSidebar"] > div:first-child { background: transparent; }
-[data-testid="stSidebar"], [data-testid="stSidebar"] :is(p, label, span, div, li, h1, h2, h3, h4) { color: var(--rail-ink); }
+[data-testid="stSidebar"], [data-testid="stSidebar"] :is(p, label, span, div, li, h1, h2, h3, h4) { color: var(--rail-ink); transition: color 0.4s var(--ease-spring); }
 [data-testid="stSidebar"] hr { border-top-color: var(--rail-line); }
 [data-testid="stSidebar"] [data-testid="stCaptionContainer"], [data-testid="stSidebar"] [data-testid="stCaptionContainer"] * { color: var(--rail-muted); font-size: 0.8125rem; }
 [data-testid="stSidebarCollapseButton"] :is(button, svg), [data-testid="stSidebar"] [data-testid="stSidebarHeader"] :is(button, svg) { color: var(--rail-muted); }
 
 .stApp .brand { display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0.25rem 0.25rem; }
-.stApp .brand svg { flex: none; }
+.stApp .brand svg { flex: none; color: var(--rail-ink); transition: color 0.4s var(--ease-spring); }
 .stApp .brand-name { font-weight: 800; font-size: 1.3rem; line-height: 1.1; letter-spacing: -0.02em; color: var(--rail-ink); }
 .stApp .brand-sub { font-size: 0.8125rem; color: var(--rail-muted); margin-top: 2px; }
 
@@ -183,23 +184,23 @@ html, body { background-color: var(--ground); }
 [data-testid="stSidebar"] [data-testid="stRadio"] label:not([data-testid="stWidgetLabel"]) {
     display: flex; align-items: center; gap: 0.75rem; width: 100%; margin: 0;
     padding: 0.6rem 0.75rem; border-radius: 6px; cursor: pointer;
-    transition: background-color 0.15s ease, color 0.15s ease;
+    transition: background-color 0.25s var(--ease-spring), padding-left 0.25s var(--ease-spring), color 0.25s var(--ease-spring);
 }
 /* Hide the radio dots robustly */
 [data-testid="stSidebar"] [data-testid="stRadio"] label:not([data-testid="stWidgetLabel"]) > div:first-child,
 [data-testid="stSidebar"] [data-testid="stRadio"] label:not([data-testid="stWidgetLabel"]) > div:has(input[type="radio"]) {
     display: none !important;
 }
-[data-testid="stSidebar"] [data-testid="stRadio"] label:not([data-testid="stWidgetLabel"]) p { margin: 0; font-size: 0.95rem; font-weight: 500; color: var(--rail-muted); line-height: 1.3; }
-[data-testid="stSidebar"] [data-testid="stRadio"] label:not([data-testid="stWidgetLabel"]):hover { background: var(--rail-hover); }
+[data-testid="stSidebar"] [data-testid="stRadio"] label:not([data-testid="stWidgetLabel"]) p { margin: 0; font-size: 0.95rem; font-weight: 500; color: var(--rail-muted); line-height: 1.3; transition: color 0.25s var(--ease-spring); }
+[data-testid="stSidebar"] [data-testid="stRadio"] label:not([data-testid="stWidgetLabel"]):hover { background: var(--rail-hover); padding-left: 1.1rem; }
 [data-testid="stSidebar"] [data-testid="stRadio"] label:not([data-testid="stWidgetLabel"]):hover p { color: var(--rail-ink); }
 [data-testid="stSidebar"] [data-testid="stRadio"] label:not([data-testid="stWidgetLabel"]):has(input:checked) { background: #c4006a; }
 [data-testid="stSidebar"] [data-testid="stRadio"] label:not([data-testid="stWidgetLabel"]):has(input:checked) p { color: #ffffff; font-weight: 700; }
 __NAV_ICONS__
 
-[data-testid="stSidebar"] [data-testid="stMetric"] { background: transparent; border: 1px solid var(--rail-line); border-radius: 8px; padding: 0.6rem 0.75rem; }
+[data-testid="stSidebar"] [data-testid="stMetric"] { background: transparent; border: 1px solid var(--rail-line); border-radius: 8px; padding: 0.6rem 0.75rem; transition: border-color 0.4s var(--ease-spring); }
 [data-testid="stSidebar"] [data-testid="stMetricLabel"] :is(p, div, span) { color: var(--rail-muted); font-size: 0.8125rem; font-weight: 600; }
-[data-testid="stSidebar"] [data-testid="stMetricValue"] { color: var(--rail-ink); font-size: 1.5rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+[data-testid="stSidebar"] [data-testid="stMetricValue"] { color: var(--rail-ink); font-size: 1.5rem; font-weight: 700; font-variant-numeric: tabular-nums; transition: color 0.4s var(--ease-spring); }
 .stApp [data-testid="stSidebar"] .stButton > button { background: transparent; border: 1px solid var(--rail-line); color: var(--rail-ink); }
 .stApp [data-testid="stSidebar"] .stButton > button:hover { background: var(--rail-hover); border-color: var(--rail-muted); color: var(--rail-ink); }
 .stApp [data-testid="stSidebar"] .stButton > button p { color: var(--rail-ink); }
@@ -231,11 +232,10 @@ __NAV_ICONS__
 .stApp .slip .cm.br { bottom: -9px; right: -9px; border-left-width: 1px; border-top-width: 1px; }
 .stApp .slip h2 { font-size: 1.25rem; font-weight: 800; line-height: 1.2; margin: 0 0 1rem; padding: 0; }
 .stApp .slip-list { list-style: none; margin: 0; padding: 0; border-top: 2px solid var(--ink); }
-.stApp .slip-list li { display: flex; flex-direction: column; gap: 2px; padding: 0.7rem 0; border-bottom: 1px solid var(--line); animation: feed 0.55s cubic-bezier(0.16, 1, 0.3, 1) backwards; animation-delay: calc(var(--i, 0) * 70ms); }
+.stApp .slip-list li { display: flex; flex-direction: column; gap: 2px; padding: 0.7rem 0; border-bottom: 1px solid var(--line); animation: feed 0.55s var(--ease-spring) backwards; animation-delay: calc(var(--i, 0) * 70ms); }
 .stApp .slip-list b { font-weight: 700; color: var(--ink); }
 .stApp .slip-list span { font-size: 0.875rem; color: var(--ink-2); }
 .stApp .slip-foot { margin: 0.9rem 0 0; font-size: 0.8125rem; color: var(--ink-3); }
-@keyframes feed { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 
 .stApp .about { display: grid; grid-template-columns: auto 1fr; gap: 1.75rem; align-items: start; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 2rem; margin: 2.5rem 0 0; scroll-margin-top: 80px; }
 .stApp .about .mono { width: 72px; height: 72px; background: var(--ink); color: var(--ground); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.5rem; letter-spacing: 0.02em; border-radius: 4px; }
@@ -278,7 +278,7 @@ __NAV_ICONS__
 .stApp .footer { border-top: 1px solid var(--line); padding: 1.5rem 0 0; margin-top: 3rem; display: flex; justify-content: space-between; gap: 0.75rem 1.5rem; flex-wrap: wrap; color: var(--ink-3); font-size: 0.875rem; }
 .stApp .footer span { color: var(--ink-3); }
 .stApp .footer .links { display: flex; gap: 1.25rem; }
-.stApp .footer .links a { color: var(--ink-2); text-decoration: none; }
+.stApp .footer .links a { color: var(--ink-2); text-decoration: none; transition: color 0.2s; }
 .stApp .footer .links a:hover { color: var(--acc-text); text-decoration: underline; }
 
 /* ---------- document pages ---------- */
@@ -303,6 +303,7 @@ __NAV_ICONS__
     background: var(--field) !important; color: var(--ink) !important; -webkit-text-fill-color: var(--ink) !important;
     caret-color: var(--acc-text); border: 1px solid var(--line-strong) !important; border-radius: 6px !important;
     box-shadow: none !important; outline: none !important;
+    transition: border-color 0.3s, box-shadow 0.3s, background-color 0.3s !important;
 }
 .stApp :is(input, textarea):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([role="combobox"]):not([aria-autocomplete]):focus {
     border-color: var(--acc-text) !important; box-shadow: 0 0 0 1px var(--acc-text) !important;
@@ -316,7 +317,7 @@ __NAV_ICONS__
 }
 /* Selectbox: the control (the box after the label) is repainted as one piece, box and text together. If the markup is
    not recognised nothing here matches and Streamlit's own selectbox stays fully native and readable. */
-.stApp [data-testid="stSelectbox"] label ~ div { background: var(--field) !important; border: 1px solid var(--line-strong) !important; border-radius: 6px !important; }
+.stApp [data-testid="stSelectbox"] label ~ div { background: var(--field) !important; border: 1px solid var(--line-strong) !important; border-radius: 6px !important; transition: border-color 0.3s, box-shadow 0.3s, background-color 0.3s !important; }
 .stApp [data-testid="stSelectbox"] label ~ div :is(div, span, input, p) { background: transparent !important; color: var(--ink) !important; -webkit-text-fill-color: var(--ink) !important; border-color: transparent !important; box-shadow: none !important; }
 .stApp [data-testid="stSelectbox"] label ~ div svg { fill: var(--ink-2) !important; color: var(--ink-2) !important; }
 /* Dropdown list: one dark panel, every layer inside transparent, every text ink-coloured, so no layer can be light-on-light. */
@@ -327,7 +328,6 @@ div[data-baseweb="popover"] :is(li, [role="option"]):is(:hover, [aria-selected="
 .stApp :is(.stButton, .stDownloadButton) > button {
     min-height: 2.75rem; border-radius: 6px; font-weight: 600; box-shadow: none;
     background: transparent; color: var(--ink); border: 1px solid var(--ink);
-    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 .stApp :is(.stButton, .stDownloadButton) > button p { color: inherit; font-weight: 600; margin: 0; }
 .stApp :is(.stButton, .stDownloadButton) > button:hover { background: var(--surface-2); border-color: var(--ink); color: var(--ink); }
@@ -354,7 +354,7 @@ div[data-baseweb="popover"] :is(li, [role="option"]):is(:hover, [aria-selected="
 
 /* Tabs, matched by ARIA role (stable across Streamlit versions) rather than internal attributes. */
 .stApp [role="tablist"] { gap: 0.25rem; }
-.stApp [role="tab"] { background: transparent !important; padding: 0.75rem 1rem; }
+.stApp [role="tab"] { background: transparent !important; padding: 0.75rem 1rem; transition: color 0.2s, background-color 0.3s var(--ease-spring), box-shadow 0.3s; }
 .stApp [role="tab"], .stApp [role="tab"] :is(p, span, div) { color: var(--ink-2) !important; font-weight: 600; }
 .stApp [role="tab"]:hover, .stApp [role="tab"]:hover :is(p, span, div) { color: var(--ink) !important; }
 .stApp [role="tab"][aria-selected="true"], .stApp [role="tab"][aria-selected="true"] :is(p, span, div) { color: var(--ink) !important; }
@@ -512,12 +512,17 @@ div[data-baseweb="popover"], div[data-baseweb="popover"] > div {
         inset 0 1px 0 var(--glass-edge),
         inset 0 -1px 0 color-mix(in srgb, var(--ink) 6%, transparent),
         0 2px 8px rgba(0,0,0,0.06);
+    transition: transform 0.25s var(--ease-bounce), background-color 0.3s var(--ease-spring), border-color 0.3s var(--ease-spring), box-shadow 0.3s var(--ease-spring) !important;
 }
 .stApp :is(.stButton, .stDownloadButton) > button:hover {
     background:
         linear-gradient(180deg, color-mix(in srgb, var(--glass-sheen) 70%, transparent) 0%, transparent 60%),
         var(--glass-bg);
     border-color: var(--glass-edge);
+    transform: translateY(-2px) scale(1.02);
+}
+.stApp :is(.stButton, .stDownloadButton) > button:active {
+    transform: translateY(0) scale(0.96);
 }
 
 /* Primary buttons: accent-tinted glass with its own glow. */
@@ -561,6 +566,9 @@ div[data-baseweb="popover"], div[data-baseweb="popover"] > div {
     backdrop-filter: none !important;
     box-shadow: none !important;
     border-radius: 0 !important;
+}
+.stApp [class*="st-key-home_feature_"] .stButton > button:hover {
+    transform: none;
 }
 
 /* Tabs: iOS-style segmented glass. */
@@ -640,6 +648,27 @@ div[data-baseweb="popover"], div[data-baseweb="popover"] > div {
     backdrop-filter: blur(12px);
 }
 
+/* ================= Transitions & Micro-interactions ================= */
+@keyframes feed { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Page Entry Animations */
+.stApp .hero,
+.stApp .page-head,
+.stApp .slip,
+.stApp .about,
+.stApp .sec-head,
+.stApp .cta,
+.stApp .support {
+    animation: fadeUp 0.6s var(--ease-spring) both;
+}
+.stApp .slip { animation-delay: 0.1s; }
+.stApp .about { animation-delay: 0.2s; }
+.stApp .sec-head { animation-delay: 0.15s; }
+
 @media (max-width: 768px) {
     .stApp .about { grid-template-columns: 1fr; padding: 1.25rem; }
     .stApp .slip { margin: 1.25rem 0.5rem 0.5rem; }
@@ -647,9 +676,18 @@ div[data-baseweb="popover"], div[data-baseweb="popover"] > div {
     .stApp .footer { flex-direction: column; }
     .stApp .chat-float { width: 90vw; right: 5vw; }
 }
+
+/* Respect user preference for reduced motion */
 @media (prefers-reduced-motion: reduce) {
-    .stApp .slip-list li { animation: none; }
-    .stApp * { transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+    .stApp *,
+    .stApp *::before,
+    .stApp *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+        transform: none !important;
+    }
 }
 </style>
 """
@@ -727,9 +765,6 @@ with st.sidebar:
         "AI Assistant": "AIAssistant"
     }
 
-    # Navigation fix: the radio now has a fixed key, so Streamlit no longer treats it as a brand-new widget (and drops
-    # the click) every time the page changes. A click updates the page through the callback; when the page was changed
-    # by go_to_page() (the Home cards), the radio is brought in line before it is drawn.
     def _on_nav_change():
         st.session_state.page = page_map[st.session_state.nav_radio]
 
