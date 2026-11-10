@@ -22,7 +22,6 @@ st.set_page_config(
 )
 
 # ---- UI theme (light / dark) ----
-# Presentation-only state: which colour set the stylesheet below uses.
 if "ui_theme" not in st.session_state:
     st.session_state.ui_theme = "light"
 
@@ -69,17 +68,16 @@ _THEMES = {
     """,
 }
 
-# One consistent line-icon set (24px grid, 1.75 stroke) for the sidebar navigation.
 _NAV_ICONS = [
-    "M3 11.5 12 4l9 7.5M5.5 10v10h13V10M10 20v-5.5h4V20",                                  # Home
-    "M4 20h4L19 9l-4-4L4 16v4zM13.5 6.5l4 4",                                                # Builder
-    "M6 3h8l4 4v14H6zM14 3v4h4M12 11.5a1.8 1.8 0 1 0 .01 0M9 18c.5-2 1.7-3 3-3s2.5 1 3 3",   # Resume
-    "M6 3h12v18H6zM9 8h6M9 12h6M9 16h4",                                                     # CV
-    "M3 6h18v12H3zM3 7l9 7 9-7",                                                             # Cover Letter
-    "M8 4h8v3H8zM6 5.5H5v15h14v-15h-1M9 17v-4M12 17v-6M15 17v-2.5",                          # Proposal
-    "M12 14a5 5 0 1 0 0-10 5 5 0 0 0 0 10zM8.5 13l-1.5 8 5-2.5 5 2.5-1.5-8",                 # Experience
-    "M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM16.5 16.5 21 21",                                 # Job Scraper
-    "M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM18.5 15.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z",  # AI Assistant
+    "M3 11.5 12 4l9 7.5M5.5 10v10h13V10M10 20v-5.5h4V20",
+    "M4 20h4L19 9l-4-4L4 16v4zM13.5 6.5l4 4",
+    "M6 3h8l4 4v14H6zM14 3v4h4M12 11.5a1.8 1.8 0 1 0 .01 0M9 18c.5-2 1.7-3 3-3s2.5 1 3 3",
+    "M6 3h12v18H6zM9 8h6M9 12h6M9 16h4",
+    "M3 6h18v12H3zM3 7l9 7 9-7",
+    "M8 4h8v3H8zM6 5.5H5v15h14v-15h-1M9 17v-4M12 17v-6M15 17v-2.5",
+    "M12 14a5 5 0 1 0 0-10 5 5 0 0 0 0 10zM8.5 13l-1.5 8 5-2.5 5 2.5-1.5-8",
+    "M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM16.5 16.5 21 21",
+    "M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM18.5 15.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z",
 ]
 _ICON_CHECK = "M5 12.5 10 17.5 19 7"
 _ICON_ARROW = "M5 12h14M13 6l6 6-6 6"
@@ -180,13 +178,11 @@ html, body { background-color: var(--ground); }
 .stApp .brand-sub { font-size: 0.8125rem; color: var(--rail-muted); margin-top: 2px; }
 
 [data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] { gap: 2px; }
-/* Only the option rows (label:not([data-testid="stWidgetLabel"])) are styled, never the widget's own hidden "Navigate" label. */
 [data-testid="stSidebar"] [data-testid="stRadio"] label:not([data-testid="stWidgetLabel"]) {
     display: flex; align-items: center; gap: 0.75rem; width: 100%; margin: 0;
     padding: 0.6rem 0.75rem; border-radius: 6px; cursor: pointer;
     transition: background-color 0.25s var(--ease-spring), padding-left 0.25s var(--ease-spring), color 0.25s var(--ease-spring);
 }
-/* Hide the radio dots robustly */
 [data-testid="stSidebar"] [data-testid="stRadio"] label:not([data-testid="stWidgetLabel"]) > div:first-child,
 [data-testid="stSidebar"] [data-testid="stRadio"] label:not([data-testid="stWidgetLabel"]) > div:has(input[type="radio"]) {
     display: none !important;
@@ -296,9 +292,6 @@ __NAV_ICONS__
 
 /* ---------- native widgets ---------- */
 .stApp [data-testid="stWidgetLabel"] :is(p, label, span) { color: var(--ink); font-weight: 600; font-size: 0.875rem; }
-/* Text fields. Written so it does not depend on Streamlit's internal markup (data-baseweb, emotion class names): the
-   <input>/<textarea> element ITSELF paints both the box and the text colour, so the two can never end up light-on-light
-   or dark-on-dark, whatever Streamlit's own theme paints underneath. */
 .stApp :is(input, textarea):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([role="combobox"]):not([aria-autocomplete]) {
     background: var(--field) !important; color: var(--ink) !important; -webkit-text-fill-color: var(--ink) !important;
     caret-color: var(--acc-text); border: 1px solid var(--line-strong) !important; border-radius: 6px !important;
@@ -310,17 +303,13 @@ __NAV_ICONS__
 }
 .stApp :is(input, textarea):-webkit-autofill { -webkit-box-shadow: 0 0 0 1000px var(--field) inset !important; -webkit-text-fill-color: var(--ink) !important; caret-color: var(--acc-text); }
 .stApp :is(input, textarea)::placeholder { color: var(--ink-3) !important; -webkit-text-fill-color: var(--ink-3) !important; opacity: 1; }
-/* Whatever Streamlit wraps around a text field (its own box, inner layer, focus ring) is made invisible so only our field shows. */
 .stApp :is([data-testid="stTextInput"], [data-testid="stTextArea"], [data-testid="stNumberInput"]) :is(div, span):has(> :is(input, textarea)),
 .stApp :is([data-testid="stTextInput"], [data-testid="stTextArea"], [data-testid="stNumberInput"]) :is(div, span):has(> :is(div, span) > :is(input, textarea)) {
     background: transparent !important; border-color: transparent !important; box-shadow: none !important;
 }
-/* Selectbox: the control (the box after the label) is repainted as one piece, box and text together. If the markup is
-   not recognised nothing here matches and Streamlit's own selectbox stays fully native and readable. */
 .stApp [data-testid="stSelectbox"] label ~ div { background: var(--field) !important; border: 1px solid var(--line-strong) !important; border-radius: 6px !important; transition: border-color 0.3s, box-shadow 0.3s, background-color 0.3s !important; }
 .stApp [data-testid="stSelectbox"] label ~ div :is(div, span, input, p) { background: transparent !important; color: var(--ink) !important; -webkit-text-fill-color: var(--ink) !important; border-color: transparent !important; box-shadow: none !important; }
 .stApp [data-testid="stSelectbox"] label ~ div svg { fill: var(--ink-2) !important; color: var(--ink-2) !important; }
-/* Dropdown list: one dark panel, every layer inside transparent, every text ink-coloured, so no layer can be light-on-light. */
 div[data-baseweb="popover"], div[data-baseweb="popover"] > div { background: var(--surface) !important; }
 div[data-baseweb="popover"] * { background: transparent !important; color: var(--ink) !important; -webkit-text-fill-color: var(--ink) !important; }
 div[data-baseweb="popover"] :is(li, [role="option"]):is(:hover, [aria-selected="true"]) { background: var(--surface-2) !important; }
@@ -352,13 +341,11 @@ div[data-baseweb="popover"] :is(li, [role="option"]):is(:hover, [aria-selected="
 .stApp [class*="st-key-rm_"] button:hover { background: var(--cyan); color: #101318; }
 .stApp [class*="st-key-rm_"] button:hover p { color: #101318; }
 
-/* Tabs, matched by ARIA role (stable across Streamlit versions) rather than internal attributes. */
 .stApp [role="tablist"] { gap: 0.25rem; }
 .stApp [role="tab"] { background: transparent !important; padding: 0.75rem 1rem; transition: color 0.2s, background-color 0.3s var(--ease-spring), box-shadow 0.3s; }
 .stApp [role="tab"], .stApp [role="tab"] :is(p, span, div) { color: var(--ink-2) !important; font-weight: 600; }
 .stApp [role="tab"]:hover, .stApp [role="tab"]:hover :is(p, span, div) { color: var(--ink) !important; }
 .stApp [role="tab"][aria-selected="true"], .stApp [role="tab"][aria-selected="true"] :is(p, span, div) { color: var(--ink) !important; }
-/* the moving underline and the rule under the tab row: found by position because their class names vary */
 .stApp :is([data-baseweb="tab-highlight"], [role="tablist"] > :not([role="tab"]):nth-last-child(2)) { background: var(--acc) !important; height: 3px !important; }
 .stApp :is([data-baseweb="tab-border"], [role="tablist"] > :not([role="tab"]):last-child) { background: var(--line) !important; }
 
@@ -382,21 +369,13 @@ div[data-baseweb="popover"] :is(li, [role="option"]):is(:hover, [aria-selected="
 .stApp [data-testid="stChatMessage"] { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
 .stApp [data-testid="stChatInput"] { border-radius: 6px; }
 
-/* floating assistant panel (only shown when show_chat is turned on) */
 .stApp .chat-float { position: fixed; bottom: 90px; right: 20px; width: 380px; max-width: 90vw; max-height: 70vh; background: var(--surface); border: 1px solid var(--line-strong); border-radius: 8px; z-index: 999; display: none; flex-direction: column; overflow: hidden; }
 .stApp .chat-float.open { display: flex; }
 .stApp .chat-float .chat-header { padding: 0.8rem 1.2rem; background: var(--ink); color: var(--ground); font-weight: 700; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
 .stApp .chat-float .chat-header button { background: none; border: none; color: var(--ground); font-size: 1.2rem; cursor: pointer; }
 .stApp .chat-float .chat-body { flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem; }
 
-/* ================= iOS liquid glass layer (refined) ================= */
-/* Physical cues borrowed from LiquidGlassKit's parameter set:
-   refraction (deep blur + high saturate), chromatic dispersion (violet inner
-   rim + cyan outer ring), Fresnel reflection (bright top inner edge, darker
-   bottom inner edge, soft outer shadow), glare (diagonal + top sheen), and
-   shape merging (larger radii on every surface). */
-
-/* Shared glass recipe for every frosted surface. */
+/* ================= iOS liquid glass layer ================= */
 .stApp .slip,
 .stApp .about,
 .stApp .incl,
@@ -420,11 +399,9 @@ div[data-baseweb="popover"] :is(li, [role="option"]):is(:hover, [aria-selected="
         0 0 0 1px color-mix(in srgb, var(--glass-rim-2) 12%, transparent);
 }
 
-/* Slip keeps its blueprint corner marks, softened for the glass panel. */
 .stApp .slip { padding: 1.6rem 1.6rem 1.35rem; }
 .stApp .slip .cm { border-color: color-mix(in srgb, var(--ink) 55%, transparent); }
 
-/* Sidebar rail: deep blur, faint top sheen, bright right edge only. */
 [data-testid="stSidebar"] {
     background:
         linear-gradient(180deg, color-mix(in srgb, var(--glass-sheen) 60%, transparent) 0%, transparent 12%),
@@ -437,7 +414,6 @@ div[data-baseweb="popover"] :is(li, [role="option"]):is(:hover, [aria-selected="
         inset 0 1px 0 color-mix(in srgb, var(--glass-edge) 20%, transparent);
 }
 
-/* Sidebar metric chips: darker glass so rail text keeps its contrast. */
 [data-testid="stSidebar"] [data-testid="stMetric"] {
     background:
         linear-gradient(135deg, color-mix(in srgb, var(--glass-sheen) 70%, transparent) 0%, transparent 40%),
@@ -451,8 +427,6 @@ div[data-baseweb="popover"] :is(li, [role="option"]):is(:hover, [aria-selected="
         inset 0 0 0 1px color-mix(in srgb, var(--glass-rim) 14%, transparent);
 }
 
-/* Text fields: element paints its own box, so glass can't create a
-   light-on-light or dark-on-dark pair. */
 .stApp :is(input, textarea):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([role="combobox"]):not([aria-autocomplete]) {
     background: var(--glass-field) !important;
     -webkit-backdrop-filter: blur(18px) saturate(180%);
@@ -475,7 +449,6 @@ div[data-baseweb="popover"] :is(li, [role="option"]):is(:hover, [aria-selected="
     -webkit-text-fill-color: var(--ink) !important;
 }
 
-/* Selectbox control. */
 .stApp [data-testid="stSelectbox"] label ~ div {
     background: var(--glass-field) !important;
     -webkit-backdrop-filter: blur(18px) saturate(180%);
@@ -487,7 +460,6 @@ div[data-baseweb="popover"] :is(li, [role="option"]):is(:hover, [aria-selected="
         inset 0 0 0 1px color-mix(in srgb, var(--glass-rim) 12%, transparent);
 }
 
-/* Dropdown popover. */
 div[data-baseweb="popover"], div[data-baseweb="popover"] > div {
     background:
         linear-gradient(135deg, var(--glass-sheen) 0%, transparent 30%),
@@ -499,7 +471,6 @@ div[data-baseweb="popover"], div[data-baseweb="popover"] > div {
     box-shadow: var(--glass-shadow) !important;
 }
 
-/* Buttons: soft glass pills. */
 .stApp :is(.stButton, .stDownloadButton) > button {
     border-radius: 999px;
     background:
@@ -525,7 +496,6 @@ div[data-baseweb="popover"], div[data-baseweb="popover"] > div {
     transform: translateY(0) scale(0.96);
 }
 
-/* Primary buttons: accent-tinted glass with its own glow. */
 .stApp :is(.stButton, .stDownloadButton) > button:is([kind="primary"], [data-testid="stBaseButton-primary"], [data-testid="baseButton-primary"]) {
     background:
         linear-gradient(180deg, rgba(255,255,255,0.28) 0%, transparent 60%),
@@ -536,7 +506,6 @@ div[data-baseweb="popover"], div[data-baseweb="popover"] > div {
         0 6px 20px color-mix(in srgb, var(--acc) 32%, transparent) !important;
 }
 
-/* Download buttons: deep-ink glass so the PDF action stays distinct. */
 .stApp .stDownloadButton > button {
     background: color-mix(in srgb, var(--ink) 92%, transparent) !important;
     color: var(--ground) !important;
@@ -550,7 +519,6 @@ div[data-baseweb="popover"], div[data-baseweb="popover"] > div {
     color: var(--ground) !important;
 }
 
-/* Sidebar buttons: dark-rail glass, no drop shadow. */
 .stApp [data-testid="stSidebar"] .stButton > button {
     border-radius: 999px;
     -webkit-backdrop-filter: blur(16px) saturate(180%);
@@ -560,7 +528,6 @@ div[data-baseweb="popover"], div[data-baseweb="popover"] > div {
         inset 0 0 0 1px color-mix(in srgb, var(--glass-rim) 12%, transparent);
 }
 
-/* Home feature rows stay list-style — no glass panel. */
 .stApp [class*="st-key-home_feature_"] .stButton > button {
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
@@ -571,7 +538,6 @@ div[data-baseweb="popover"], div[data-baseweb="popover"] > div {
     transform: none;
 }
 
-/* Tabs: iOS-style segmented glass. */
 .stApp [role="tablist"] {
     background:
         linear-gradient(180deg, color-mix(in srgb, var(--glass-sheen) 60%, transparent) 0%, transparent 40%),
@@ -595,7 +561,6 @@ div[data-baseweb="popover"], div[data-baseweb="popover"] > div {
         inset 0 1px 0 var(--glass-edge),
         0 2px 8px rgba(0,0,0,0.12);
 }
-/* The default sliding underline is hidden — the glass pill is the indicator. */
 .stApp :is([data-baseweb="tab-highlight"], [role="tablist"] > :not([role="tab"]):nth-last-child(2)) {
     background: transparent !important;
     height: 0 !important;
@@ -604,7 +569,6 @@ div[data-baseweb="popover"], div[data-baseweb="popover"] > div {
     background: transparent !important;
 }
 
-/* Alerts tinted inside the glass. */
 .stApp [data-testid="stAlert"] > div { border-radius: 18px !important; }
 .stApp [data-testid="stAlert"]:has([data-testid="stAlertContentError"]) > div {
     background:
@@ -631,7 +595,6 @@ div[data-baseweb="popover"], div[data-baseweb="popover"] > div {
     border-color: color-mix(in srgb, var(--cyan) 55%, var(--glass-border)) !important;
 }
 
-/* Floating assistant. */
 .stApp .chat-float {
     background:
         linear-gradient(135deg, var(--glass-sheen) 0%, transparent 30%),
@@ -655,7 +618,6 @@ div[data-baseweb="popover"], div[data-baseweb="popover"] > div {
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* Page Entry Animations */
 .stApp .hero,
 .stApp .page-head,
 .stApp .slip,
@@ -669,68 +631,64 @@ div[data-baseweb="popover"], div[data-baseweb="popover"] > div {
 .stApp .about { animation-delay: 0.2s; }
 .stApp .sec-head { animation-delay: 0.15s; }
 
-/* ================= Water Ripple Effect ================= */
-/* Give buttons the ability to splash outside their bounds */
+/* ================= True Water Ripple Effect ================= */
+/* 1. Force overflow visible so the wave can escape the button boundaries */
+.stApp div[data-testid="stElementContainer"]:has(.stButton) { overflow: visible !important; }
+.stApp .stButton, .stApp .stDownloadButton { overflow: visible !important; }
 .stApp :is(.stButton, .stDownloadButton) > button {
     position: relative;
     z-index: 1;
-    overflow: visible;
+    overflow: visible !important;
 }
 
-/* The wave and the ring */
+/* 2. Create the wave and ring pseudo-elements */
 .stApp :is(.stButton, .stDownloadButton) > button::before,
 .stApp :is(.stButton, .stDownloadButton) > button::after {
     content: "";
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 100px;
-    height: 100px;
-    margin: -50px 0 0 -50px;
-    border-radius: 50%;
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0;
     pointer-events: none;
     z-index: -1;
-    opacity: 0;
-    transform: scale(0);
 }
 
-/* Outer wave (soft gradient) */
+/* 3. The expanding water wave (blurred gradient) */
 .stApp :is(.stButton, .stDownloadButton) > button::after {
-    background: radial-gradient(circle, rgba(255,255,255,0.7) 0%, color-mix(in srgb, var(--acc) 45%, transparent) 30%, transparent 60%);
+    background: radial-gradient(circle, color-mix(in srgb, var(--acc) 50%, transparent) 0%, transparent 70%);
+    filter: blur(12px);
+    transition: transform 0.6s var(--ease-spring), opacity 0.6s var(--ease-spring);
 }
 
-/* Inner ring (glowing border) */
+/* 4. The expanding water ring (sharp glowing border) */
 .stApp :is(.stButton, .stDownloadButton) > button::before {
-    border: 2px solid color-mix(in srgb, var(--acc) 80%, white);
-    box-shadow: 0 0 15px color-mix(in srgb, var(--acc) 50%, transparent), inset 0 0 10px color-mix(in srgb, var(--acc) 50%, transparent);
+    border: 2px solid color-mix(in srgb, var(--acc) 80%, transparent);
+    box-shadow: 0 0 20px color-mix(in srgb, var(--acc) 40%, transparent);
+    transition: transform 0.6s var(--ease-spring), opacity 0.6s var(--ease-spring);
 }
 
-/* Trigger the water drop on click */
+/* 5. Trigger the splash on click */
 .stApp :is(.stButton, .stDownloadButton) > button:active::after {
-    animation: waterFill 0.8s var(--ease-bounce) forwards;
+    transform: translate(-50%, -50%) scale(2.5);
+    opacity: 1;
+    transition: 0s; /* Instant expansion */
 }
-
 .stApp :is(.stButton, .stDownloadButton) > button:active::before {
-    animation: waterRing 0.8s var(--ease-bounce) forwards;
+    transform: translate(-50%, -50%) scale(3.5);
+    opacity: 1;
+    transition: 0s; /* Instant expansion */
 }
 
-/* Exclude Home Feature list buttons so they don't break */
-.stApp [class*="st-key-home_feature_"] .stButton > button {
-    overflow: hidden;
-}
+/* 6. Disable ripple for the Home list items and Sidebar to keep them clean */
+.stApp [class*="st-key-home_feature_"] .stButton > button::before,
 .stApp [class*="st-key-home_feature_"] .stButton > button::after,
-.stApp [class*="st-key-home_feature_"] .stButton > button::before {
-    display: none;
-}
-
-@keyframes waterFill {
-    0% { transform: scale(0.5); opacity: 0.8; }
-    100% { transform: scale(4); opacity: 0; }
-}
-
-@keyframes waterRing {
-    0% { transform: scale(0.5); opacity: 1; border-width: 4px; }
-    100% { transform: scale(3); opacity: 0; border-width: 1px; }
+.stApp [data-testid="stSidebar"] .stButton > button::before,
+.stApp [data-testid="stSidebar"] .stButton > button::after {
+    display: none !important;
 }
 
 @media (max-width: 768px) {
@@ -741,7 +699,6 @@ div[data-baseweb="popover"], div[data-baseweb="popover"] > div {
     .stApp .chat-float { width: 90vw; right: 5vw; }
 }
 
-/* Respect user preference for reduced motion */
 @media (prefers-reduced-motion: reduce) {
     .stApp *,
     .stApp *::before,
@@ -767,7 +724,6 @@ st.markdown(
 
 
 def _included(title, items):
-    """Small 'what's in this document' checklist shown beside each form."""
     lis = "".join("<li>%s</li>" % item for item in items)
     return '<div class="incl"><h4>%s</h4><ul>%s</ul></div>' % (title, lis)
 
@@ -888,7 +844,6 @@ def get_user_data():
 
 # ---- Function to render the common info fields (used on each document page) ----
 def render_common_info():
-    """Render collapsible common information fields."""
     with st.expander("Your Information (edit here)", expanded=False):
         st.markdown("Fill in your details. These will be used for all documents.")
         col1, col2 = st.columns(2)
@@ -947,7 +902,6 @@ def render_common_info():
 
         st.text_area("Projects (one per line)", key="f_projects", placeholder="ResumeForge — AI resume builder\nTaskBot — Slack automation", height=100)
 
-        # Skills management
         col1, col2 = st.columns([3, 1])
         with col1:
             new_skill = st.text_input("Add a skill", key="skill_input_common", placeholder="Python, React, SQL...")
@@ -1066,7 +1020,6 @@ if page == "Home":
     if st.button("Start Building", key="cta_start_building", use_container_width=False, type="primary"):
         go_to_page("Builder")
 
-    # Support section
     st.markdown("""
 <div class="support" id="support-section">
 <h2>Support the Developer</h2>
@@ -1101,7 +1054,7 @@ if page == "Home":
 </div>
 """, unsafe_allow_html=True)
 
-# ---- BUILDER (kept for users who prefer a dedicated page) ----
+# ---- BUILDER ----
 elif page == "Builder":
     st.markdown("""
 <div class="page-head">
@@ -1111,7 +1064,6 @@ elif page == "Builder":
 </div>
 """, unsafe_allow_html=True)
 
-    # Apply pending improvements
     if st.session_state.pending_improve_exp is not None:
         st.session_state.f_exp_desc = st.session_state.pending_improve_exp
         st.session_state.pending_improve_exp = None
@@ -1232,7 +1184,6 @@ elif page == "Resume":
 </div>
 """, unsafe_allow_html=True)
 
-    # Common info section
     render_common_info()
 
     col1, col2 = st.columns([2, 1])
