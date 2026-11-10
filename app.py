@@ -37,12 +37,15 @@ _THEMES = {
         --yellow: #ffd60a;
         --ok: #0b7a3e; --warn: #8a5300; --bad: #b42318;
         --rail: #0d0f13; --rail-ink: #f2f4f7; --rail-muted: #aeb6c3; --rail-line: #2a2f38; --rail-hover: #1a1e25;
-        --ambient-1: rgba(124,92,255,0.30); --ambient-2: rgba(0,180,216,0.26); --ambient-3: rgba(255,79,160,0.22);
-        --glass-bg: rgba(255,255,255,0.55); --glass-bg-2: rgba(255,255,255,0.38);
-        --glass-field: rgba(255,255,255,0.72); --glass-border: rgba(255,255,255,0.85);
-        --glass-edge: rgba(255,255,255,0.95); --glass-pill: rgba(255,255,255,0.82);
-        --glass-ink: rgba(16,19,24,0.86); --glass-shadow: 0 10px 34px rgba(31,38,80,0.12);
-        --rail-glass: rgba(13,15,19,0.72);
+        --ambient-1: rgba(124,92,255,0.32); --ambient-2: rgba(0,180,216,0.28); --ambient-3: rgba(255,79,160,0.24);
+        --glass-bg: rgba(255,255,255,0.52); --glass-bg-2: rgba(255,255,255,0.38);
+        --glass-field: rgba(255,255,255,0.68);
+        --glass-border: rgba(255,255,255,0.88); --glass-edge: rgba(255,255,255,0.98);
+        --glass-pill: rgba(255,255,255,0.85); --glass-sheen: rgba(255,255,255,0.55);
+        --glass-rim: rgba(124,92,255,0.55); --glass-rim-2: rgba(0,212,255,0.50);
+        --glass-ink: rgba(16,19,24,0.86);
+        --glass-shadow: 0 18px 44px rgba(31,38,80,0.16), 0 4px 12px rgba(31,38,80,0.08);
+        --rail-glass: rgba(13,15,19,0.66);
     """,
     "dark": """
         color-scheme: dark;
@@ -54,12 +57,15 @@ _THEMES = {
         --yellow: #ffd60a;
         --ok: #4cd68a; --warn: #f2b84b; --bad: #ff8a80;
         --rail: #06070a; --rail-ink: #f2f4f7; --rail-muted: #aeb6c3; --rail-line: #2a2f38; --rail-hover: #1a1e25;
-        --ambient-1: rgba(124,92,255,0.32); --ambient-2: rgba(0,212,255,0.24); --ambient-3: rgba(255,79,160,0.22);
-        --glass-bg: rgba(255,255,255,0.075); --glass-bg-2: rgba(255,255,255,0.05);
-        --glass-field: rgba(255,255,255,0.09); --glass-border: rgba(255,255,255,0.16);
-        --glass-edge: rgba(255,255,255,0.28); --glass-pill: rgba(255,255,255,0.14);
-        --glass-ink: rgba(238,241,245,0.9); --glass-shadow: 0 10px 34px rgba(0,0,0,0.45);
-        --rail-glass: rgba(6,7,10,0.62);
+        --ambient-1: rgba(124,92,255,0.34); --ambient-2: rgba(0,212,255,0.26); --ambient-3: rgba(255,79,160,0.24);
+        --glass-bg: rgba(255,255,255,0.075); --glass-bg-2: rgba(255,255,255,0.045);
+        --glass-field: rgba(255,255,255,0.09);
+        --glass-border: rgba(255,255,255,0.16); --glass-edge: rgba(255,255,255,0.32);
+        --glass-pill: rgba(255,255,255,0.16); --glass-sheen: rgba(255,255,255,0.14);
+        --glass-rim: rgba(124,92,255,0.50); --glass-rim-2: rgba(0,212,255,0.45);
+        --glass-ink: rgba(238,241,245,0.9);
+        --glass-shadow: 0 18px 46px rgba(0,0,0,0.50), 0 4px 14px rgba(0,0,0,0.35);
+        --rail-glass: rgba(6,7,10,0.58);
     """,
 }
 
@@ -380,9 +386,14 @@ div[data-baseweb="popover"] :is(li, [role="option"]):is(:hover, [aria-selected="
 .stApp .chat-float .chat-header button { background: none; border: none; color: var(--ground); font-size: 1.2rem; cursor: pointer; }
 .stApp .chat-float .chat-body { flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem; }
 
-/* ================= iOS liquid glass layer ================= */
-/* Frosted panels. Placed after the component rules so they win at equal
-   specificity. Pure paint: no widget behaviour is touched. */
+/* ================= iOS liquid glass layer (refined) ================= */
+/* Physical cues borrowed from LiquidGlassKit's parameter set:
+   refraction (deep blur + high saturate), chromatic dispersion (violet inner
+   rim + cyan outer ring), Fresnel reflection (bright top inner edge, darker
+   bottom inner edge, soft outer shadow), glare (diagonal + top sheen), and
+   shape merging (larger radii on every surface). */
+
+/* Shared glass recipe for every frosted surface. */
 .stApp .slip,
 .stApp .about,
 .stApp .incl,
@@ -390,106 +401,190 @@ div[data-baseweb="popover"] :is(li, [role="option"]):is(:hover, [aria-selected="
 .stApp [data-testid="stExpander"] details,
 .stApp [data-testid="stAlert"] > div,
 .stApp [data-testid="stChatMessage"] {
-    background: var(--glass-bg) !important;
-    -webkit-backdrop-filter: blur(22px) saturate(180%);
-    backdrop-filter: blur(22px) saturate(180%);
+    background:
+        linear-gradient(135deg, var(--glass-sheen) 0%, transparent 30%),
+        linear-gradient(180deg, color-mix(in srgb, var(--glass-sheen) 60%, transparent) 0%, transparent 44%),
+        var(--glass-bg) !important;
+    -webkit-backdrop-filter: blur(28px) saturate(200%);
+    backdrop-filter: blur(28px) saturate(200%);
     border: 1px solid var(--glass-border) !important;
-    border-radius: 18px !important;
-    box-shadow: var(--glass-shadow), inset 0 1px 0 var(--glass-edge);
+    border-radius: 24px !important;
+    box-shadow:
+        var(--glass-shadow),
+        inset 0 1px 0 var(--glass-edge),
+        inset 0 -1px 0 color-mix(in srgb, var(--ink) 8%, transparent),
+        inset 0 0 0 1px color-mix(in srgb, var(--glass-rim) 14%, transparent),
+        0 0 0 1px color-mix(in srgb, var(--glass-rim-2) 12%, transparent);
 }
 
-/* Slip registration marks stay legible on glass. */
-.stApp .slip .cm { border-color: color-mix(in srgb, var(--ink) 42%, transparent); }
+/* Slip keeps its blueprint corner marks, softened for the glass panel. */
+.stApp .slip { padding: 1.6rem 1.6rem 1.35rem; }
+.stApp .slip .cm { border-color: color-mix(in srgb, var(--ink) 55%, transparent); }
 
-/* Sidebar metric chips: darker glass so rail text stays readable. */
+/* Sidebar rail: deep blur, faint top sheen, bright right edge only. */
+[data-testid="stSidebar"] {
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--glass-sheen) 60%, transparent) 0%, transparent 12%),
+        var(--rail-glass) !important;
+    -webkit-backdrop-filter: blur(32px) saturate(200%);
+    backdrop-filter: blur(32px) saturate(200%);
+    border-right: 1px solid var(--glass-border);
+    box-shadow:
+        inset -1px 0 0 color-mix(in srgb, var(--glass-edge) 30%, transparent),
+        inset 0 1px 0 color-mix(in srgb, var(--glass-edge) 20%, transparent);
+}
+
+/* Sidebar metric chips: darker glass so rail text keeps its contrast. */
 [data-testid="stSidebar"] [data-testid="stMetric"] {
-    background: rgba(255,255,255,0.06) !important;
-    -webkit-backdrop-filter: blur(16px) saturate(160%);
-    backdrop-filter: blur(16px) saturate(160%);
+    background:
+        linear-gradient(135deg, color-mix(in srgb, var(--glass-sheen) 70%, transparent) 0%, transparent 40%),
+        rgba(255,255,255,0.07) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(180%);
+    backdrop-filter: blur(18px) saturate(180%);
     border: 1px solid var(--glass-border) !important;
-    border-radius: 14px !important;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.12);
+    border-radius: 16px !important;
+    box-shadow:
+        inset 0 1px 0 color-mix(in srgb, var(--glass-edge) 70%, transparent),
+        inset 0 0 0 1px color-mix(in srgb, var(--glass-rim) 14%, transparent);
 }
 
-/* Fields: the element itself paints box + text, so glass can't create a
-   light-on-light (or dark-on-dark) pair. */
+/* Text fields: element paints its own box, so glass can't create a
+   light-on-light or dark-on-dark pair. */
 .stApp :is(input, textarea):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([role="combobox"]):not([aria-autocomplete]) {
     background: var(--glass-field) !important;
-    -webkit-backdrop-filter: blur(14px) saturate(160%);
-    backdrop-filter: blur(14px) saturate(160%);
+    -webkit-backdrop-filter: blur(18px) saturate(180%);
+    backdrop-filter: blur(18px) saturate(180%);
     border: 1px solid var(--glass-border) !important;
-    border-radius: 14px !important;
-    box-shadow: inset 0 1px 0 var(--glass-edge);
+    border-radius: 16px !important;
+    box-shadow:
+        inset 0 1px 0 var(--glass-edge),
+        inset 0 -1px 0 color-mix(in srgb, var(--ink) 6%, transparent),
+        inset 0 0 0 1px color-mix(in srgb, var(--glass-rim) 12%, transparent);
 }
 .stApp :is(input, textarea):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([role="combobox"]):not([aria-autocomplete]):focus {
     border-color: var(--acc-text) !important;
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--acc-text) 26%, transparent), inset 0 1px 0 var(--glass-edge) !important;
+    box-shadow:
+        0 0 0 3px color-mix(in srgb, var(--acc-text) 22%, transparent),
+        inset 0 1px 0 var(--glass-edge) !important;
 }
 .stApp :is(input, textarea):-webkit-autofill {
     -webkit-box-shadow: 0 0 0 1000px var(--glass-field) inset !important;
     -webkit-text-fill-color: var(--ink) !important;
 }
 
-/* Selectbox control + dropdown as one glass piece. */
+/* Selectbox control. */
 .stApp [data-testid="stSelectbox"] label ~ div {
     background: var(--glass-field) !important;
-    -webkit-backdrop-filter: blur(14px) saturate(160%);
-    backdrop-filter: blur(14px) saturate(160%);
-    border: 1px solid var(--glass-border) !important;
-    border-radius: 14px !important;
-    box-shadow: inset 0 1px 0 var(--glass-edge);
-}
-div[data-baseweb="popover"], div[data-baseweb="popover"] > div {
-    background: var(--glass-bg) !important;
-    -webkit-backdrop-filter: blur(24px) saturate(180%);
-    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(18px) saturate(180%);
+    backdrop-filter: blur(18px) saturate(180%);
     border: 1px solid var(--glass-border) !important;
     border-radius: 16px !important;
+    box-shadow:
+        inset 0 1px 0 var(--glass-edge),
+        inset 0 0 0 1px color-mix(in srgb, var(--glass-rim) 12%, transparent);
+}
+
+/* Dropdown popover. */
+div[data-baseweb="popover"], div[data-baseweb="popover"] > div {
+    background:
+        linear-gradient(135deg, var(--glass-sheen) 0%, transparent 30%),
+        var(--glass-bg) !important;
+    -webkit-backdrop-filter: blur(30px) saturate(200%);
+    backdrop-filter: blur(30px) saturate(200%);
+    border: 1px solid var(--glass-border) !important;
+    border-radius: 20px !important;
     box-shadow: var(--glass-shadow) !important;
 }
 
-/* Buttons: soft glass pills. Feature rows keep their list design. */
+/* Buttons: soft glass pills. */
 .stApp :is(.stButton, .stDownloadButton) > button {
     border-radius: 999px;
-    -webkit-backdrop-filter: blur(18px) saturate(160%);
-    backdrop-filter: blur(18px) saturate(160%);
-    box-shadow: inset 0 1px 0 var(--glass-edge), 0 4px 14px rgba(0,0,0,0.08);
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--glass-sheen) 55%, transparent) 0%, transparent 60%),
+        var(--glass-bg-2);
+    border: 1px solid var(--glass-border);
+    -webkit-backdrop-filter: blur(18px) saturate(180%);
+    backdrop-filter: blur(18px) saturate(180%);
+    box-shadow:
+        inset 0 1px 0 var(--glass-edge),
+        inset 0 -1px 0 color-mix(in srgb, var(--ink) 6%, transparent),
+        0 2px 8px rgba(0,0,0,0.06);
 }
-.stApp [class*="st-key-home_feature_"] .stButton > button {
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-    box-shadow: none;
+.stApp :is(.stButton, .stDownloadButton) > button:hover {
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--glass-sheen) 70%, transparent) 0%, transparent 60%),
+        var(--glass-bg);
+    border-color: var(--glass-edge);
 }
+
+/* Primary buttons: accent-tinted glass with its own glow. */
 .stApp :is(.stButton, .stDownloadButton) > button:is([kind="primary"], [data-testid="stBaseButton-primary"], [data-testid="baseButton-primary"]) {
-    background: color-mix(in srgb, var(--acc) 88%, transparent) !important;
-    border-color: color-mix(in srgb, var(--acc) 58%, white) !important;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.45), 0 10px 26px color-mix(in srgb, var(--acc) 36%, transparent) !important;
+    background:
+        linear-gradient(180deg, rgba(255,255,255,0.28) 0%, transparent 60%),
+        color-mix(in srgb, var(--acc) 88%, transparent) !important;
+    border-color: color-mix(in srgb, var(--acc) 60%, white) !important;
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.5),
+        0 6px 20px color-mix(in srgb, var(--acc) 32%, transparent) !important;
 }
+
+/* Download buttons: deep-ink glass so the PDF action stays distinct. */
 .stApp .stDownloadButton > button {
-    background: var(--glass-ink) !important;
+    background: color-mix(in srgb, var(--ink) 92%, transparent) !important;
     color: var(--ground) !important;
     border-color: transparent !important;
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.15),
+        0 6px 20px rgba(0,0,0,0.15) !important;
 }
 .stApp .stDownloadButton > button:hover {
-    background: color-mix(in srgb, var(--ink) 88%, transparent) !important;
+    background: color-mix(in srgb, var(--ink) 84%, transparent) !important;
     color: var(--ground) !important;
 }
 
-/* Tabs become an iOS-style segmented glass control. */
+/* Sidebar buttons: dark-rail glass, no drop shadow. */
+.stApp [data-testid="stSidebar"] .stButton > button {
+    border-radius: 999px;
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    backdrop-filter: blur(16px) saturate(180%);
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.08),
+        inset 0 0 0 1px color-mix(in srgb, var(--glass-rim) 12%, transparent);
+}
+
+/* Home feature rows stay list-style — no glass panel. */
+.stApp [class*="st-key-home_feature_"] .stButton > button {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+}
+
+/* Tabs: iOS-style segmented glass. */
 .stApp [role="tablist"] {
-    background: var(--glass-bg-2) !important;
-    -webkit-backdrop-filter: blur(18px) saturate(180%);
-    backdrop-filter: blur(18px) saturate(180%);
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--glass-sheen) 60%, transparent) 0%, transparent 40%),
+        var(--glass-bg-2) !important;
+    -webkit-backdrop-filter: blur(22px) saturate(200%);
+    backdrop-filter: blur(22px) saturate(200%);
     border: 1px solid var(--glass-border);
-    border-radius: 16px;
-    padding: 0.3rem;
-    gap: 0.3rem !important;
+    border-radius: 18px;
+    padding: 0.35rem;
+    gap: 0.35rem !important;
+    box-shadow:
+        inset 0 1px 0 var(--glass-edge),
+        inset 0 0 0 1px color-mix(in srgb, var(--glass-rim) 10%, transparent);
 }
-.stApp [role="tab"] { border-radius: 12px; }
+.stApp [role="tab"] { border-radius: 14px; }
 .stApp [role="tab"][aria-selected="true"] {
-    background: var(--glass-pill) !important;
-    box-shadow: inset 0 1px 0 var(--glass-edge), 0 3px 10px rgba(0,0,0,0.14);
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--glass-sheen) 70%, transparent) 0%, transparent 70%),
+        var(--glass-pill) !important;
+    box-shadow:
+        inset 0 1px 0 var(--glass-edge),
+        0 2px 8px rgba(0,0,0,0.12);
 }
+/* The default sliding underline is hidden — the glass pill is the indicator. */
 .stApp :is([data-baseweb="tab-highlight"], [role="tablist"] > :not([role="tab"]):nth-last-child(2)) {
     background: transparent !important;
     height: 0 !important;
@@ -498,19 +593,48 @@ div[data-baseweb="popover"], div[data-baseweb="popover"] > div {
     background: transparent !important;
 }
 
-/* Floating assistant panel. */
+/* Alerts tinted inside the glass. */
+.stApp [data-testid="stAlert"] > div { border-radius: 18px !important; }
+.stApp [data-testid="stAlert"]:has([data-testid="stAlertContentError"]) > div {
+    background:
+        linear-gradient(135deg, color-mix(in srgb, var(--bad) 20%, transparent) 0%, transparent 40%),
+        color-mix(in srgb, var(--bad) 14%, var(--glass-bg)) !important;
+    border-color: color-mix(in srgb, var(--bad) 55%, var(--glass-border)) !important;
+}
+.stApp [data-testid="stAlert"]:has([data-testid="stAlertContentWarning"]) > div {
+    background:
+        linear-gradient(135deg, color-mix(in srgb, var(--warn) 22%, transparent) 0%, transparent 40%),
+        color-mix(in srgb, var(--warn) 14%, var(--glass-bg)) !important;
+    border-color: color-mix(in srgb, var(--warn) 55%, var(--glass-border)) !important;
+}
+.stApp [data-testid="stAlert"]:has([data-testid="stAlertContentSuccess"]) > div {
+    background:
+        linear-gradient(135deg, color-mix(in srgb, var(--ok) 22%, transparent) 0%, transparent 40%),
+        color-mix(in srgb, var(--ok) 14%, var(--glass-bg)) !important;
+    border-color: color-mix(in srgb, var(--ok) 55%, var(--glass-border)) !important;
+}
+.stApp [data-testid="stAlert"]:has([data-testid="stAlertContentInfo"]) > div {
+    background:
+        linear-gradient(135deg, color-mix(in srgb, var(--cyan) 22%, transparent) 0%, transparent 40%),
+        color-mix(in srgb, var(--cyan) 14%, var(--glass-bg)) !important;
+    border-color: color-mix(in srgb, var(--cyan) 55%, var(--glass-border)) !important;
+}
+
+/* Floating assistant. */
 .stApp .chat-float {
-    background: var(--glass-bg) !important;
-    -webkit-backdrop-filter: blur(26px) saturate(180%);
-    backdrop-filter: blur(26px) saturate(180%);
+    background:
+        linear-gradient(135deg, var(--glass-sheen) 0%, transparent 30%),
+        var(--glass-bg) !important;
+    -webkit-backdrop-filter: blur(32px) saturate(200%);
+    backdrop-filter: blur(32px) saturate(200%);
     border: 1px solid var(--glass-border) !important;
-    border-radius: 20px !important;
-    box-shadow: var(--glass-shadow), inset 0 1px 0 var(--glass-edge);
+    border-radius: 24px !important;
+    box-shadow: var(--glass-shadow), inset 0 1px 0 var(--glass-edge) !important;
 }
 .stApp .chat-float .chat-header {
-    background: color-mix(in srgb, var(--ink) 72%, transparent) !important;
-    -webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(10px);
+    background: color-mix(in srgb, var(--ink) 70%, transparent) !important;
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
 }
 
 @media (max-width: 768px) {
