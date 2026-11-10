@@ -36,7 +36,7 @@ _THEMES = {
         --cyan: #00b4d8; --cyan-text: #00647f; --cyan-tint: #dff4fa;
         --yellow: #ffd60a;
         --ok: #0b7a3e; --warn: #8a5300; --bad: #b42318;
-        --rail: #0d0f13; --rail-ink: #f2f4f7; --rail-muted: #aeb6c3; --rail-line: #2a2f38; --rail-hover: #1a1e25;
+        --rail: #f3f5f8; --rail-ink: #101318; --rail-muted: #5b6573; --rail-line: #d3d8e0; --rail-hover: #e9edf2;
         --ambient-1: rgba(124,92,255,0.32); --ambient-2: rgba(0,180,216,0.28); --ambient-3: rgba(255,79,160,0.24);
         --glass-bg: rgba(255,255,255,0.52); --glass-bg-2: rgba(255,255,255,0.38);
         --glass-field: rgba(255,255,255,0.68);
@@ -45,7 +45,7 @@ _THEMES = {
         --glass-rim: rgba(124,92,255,0.55); --glass-rim-2: rgba(0,212,255,0.50);
         --glass-ink: rgba(16,19,24,0.86);
         --glass-shadow: 0 18px 44px rgba(31,38,80,0.16), 0 4px 12px rgba(31,38,80,0.08);
-        --rail-glass: rgba(13,15,19,0.66);
+        --rail-glass: rgba(255,255,255,0.45);
     """,
     "dark": """
         color-scheme: dark;
@@ -102,7 +102,7 @@ def _nav_icon_css():
     rg = '[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"]'
     rules = []
     for i, d in enumerate(_NAV_ICONS, start=1):
-        muted, bright = _icon_uri(d, "%23aeb6c3"), _icon_uri(d, "%23ffffff")
+        muted, bright = _icon_uri(d, "%235b6573"), _icon_uri(d, "%23ffffff")
         sel = ["%s > label:nth-child(%d)" % (rg, i), "%s > :nth-child(%d) > label" % (rg, i)]
         rules.append(
             ", ".join(s + "::before" for s in sel)
@@ -185,8 +185,11 @@ html, body { background-color: var(--ground); }
     padding: 0.6rem 0.75rem; border-radius: 6px; cursor: pointer;
     transition: background-color 0.15s ease, color 0.15s ease;
 }
-/* Hide only the round radio dot: a direct child that does not hold the option text (the text may or may not be wrapped). */
-[data-testid="stSidebar"] [data-testid="stRadio"] label:not([data-testid="stWidgetLabel"]) > :is(div, span):not([data-testid="stMarkdownContainer"]):not(:has([data-testid="stMarkdownContainer"])) { display: none; }
+/* Hide the radio dots robustly */
+[data-testid="stSidebar"] [data-testid="stRadio"] label:not([data-testid="stWidgetLabel"]) > div:first-child,
+[data-testid="stSidebar"] [data-testid="stRadio"] label:not([data-testid="stWidgetLabel"]) > div:has(input[type="radio"]) {
+    display: none !important;
+}
 [data-testid="stSidebar"] [data-testid="stRadio"] label:not([data-testid="stWidgetLabel"]) p { margin: 0; font-size: 0.95rem; font-weight: 500; color: var(--rail-muted); line-height: 1.3; }
 [data-testid="stSidebar"] [data-testid="stRadio"] label:not([data-testid="stWidgetLabel"]):hover { background: var(--rail-hover); }
 [data-testid="stSidebar"] [data-testid="stRadio"] label:not([data-testid="stWidgetLabel"]):hover p { color: var(--rail-ink); }
@@ -438,7 +441,7 @@ div[data-baseweb="popover"] :is(li, [role="option"]):is(:hover, [aria-selected="
 [data-testid="stSidebar"] [data-testid="stMetric"] {
     background:
         linear-gradient(135deg, color-mix(in srgb, var(--glass-sheen) 70%, transparent) 0%, transparent 40%),
-        rgba(255,255,255,0.07) !important;
+        color-mix(in srgb, var(--ink) 5%, transparent) !important;
     -webkit-backdrop-filter: blur(18px) saturate(180%);
     backdrop-filter: blur(18px) saturate(180%);
     border: 1px solid var(--glass-border) !important;
@@ -705,7 +708,7 @@ def safe_ai_response(response, fallback=None):
 with st.sidebar:
     st.markdown("""
 <div class="brand">
-<svg width="30" height="34" viewBox="0 0 30 34" fill="none" aria-hidden="true"><path d="M3 1.5h15l9 9V32.5H3z" stroke="#f2f4f7" stroke-width="1.75" stroke-linejoin="round"/><path d="M18 1.5v9h9" stroke="#f2f4f7" stroke-width="1.75" stroke-linejoin="round"/><rect x="7" y="24" width="4" height="4" fill="#00b4d8"/><rect x="12" y="24" width="4" height="4" fill="#ff4fa0"/><rect x="17" y="24" width="4" height="4" fill="#ffd60a"/><rect x="22" y="24" width="2" height="4" fill="#f2f4f7"/></svg>
+<svg width="30" height="34" viewBox="0 0 30 34" fill="none" aria-hidden="true"><path d="M3 1.5h15l9 9V32.5H3z" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/><path d="M18 1.5v9h9" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/><rect x="7" y="24" width="4" height="4" fill="#00b4d8"/><rect x="12" y="24" width="4" height="4" fill="#ff4fa0"/><rect x="17" y="24" width="4" height="4" fill="#ffd60a"/><rect x="22" y="24" width="2" height="4" fill="currentColor"/></svg>
 <div><div class="brand-name">DocForge</div><div class="brand-sub">Professional Documents</div></div>
 </div>
 """, unsafe_allow_html=True)
