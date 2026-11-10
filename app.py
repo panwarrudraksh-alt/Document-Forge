@@ -641,46 +641,46 @@ div[data-baseweb="popover"], div[data-baseweb="popover"] > div {
     overflow: visible !important;
 }
 
-/* 2. Create the wave and ring pseudo-elements */
+/* 2. Create the wave and ring pseudo-elements with a FIXED circular base */
 .stApp :is(.stButton, .stDownloadButton) > button::before,
 .stApp :is(.stButton, .stDownloadButton) > button::after {
     content: "";
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 100%;
-    height: 100%;
-    border-radius: inherit;
+    width: 60px;  /* Fixed base size like a droplet */
+    height: 60px;
+    border-radius: 50%;
     transform: translate(-50%, -50%) scale(1);
     opacity: 0;
     pointer-events: none;
     z-index: -1;
 }
 
-/* 3. The expanding water wave (blurred gradient) */
+/* 3. The expanding water wave (soft blur) */
 .stApp :is(.stButton, .stDownloadButton) > button::after {
-    background: radial-gradient(circle, color-mix(in srgb, var(--acc) 50%, transparent) 0%, transparent 70%);
-    filter: blur(12px);
-    transition: transform 0.6s var(--ease-spring), opacity 0.6s var(--ease-spring);
+    background: radial-gradient(circle, color-mix(in srgb, var(--acc) 40%, transparent) 0%, transparent 70%);
+    filter: blur(10px);
+    transition: transform 0.7s var(--ease-spring), opacity 0.7s var(--ease-spring);
 }
 
-/* 4. The expanding water ring (sharp glowing border) */
+/* 4. The expanding water ring (thin glow) */
 .stApp :is(.stButton, .stDownloadButton) > button::before {
-    border: 2px solid color-mix(in srgb, var(--acc) 80%, transparent);
-    box-shadow: 0 0 20px color-mix(in srgb, var(--acc) 40%, transparent);
-    transition: transform 0.6s var(--ease-spring), opacity 0.6s var(--ease-spring);
+    border: 1px solid color-mix(in srgb, var(--acc) 60%, transparent);
+    box-shadow: 0 0 15px color-mix(in srgb, var(--acc) 30%, transparent);
+    transition: transform 0.7s var(--ease-spring), opacity 0.7s var(--ease-spring);
 }
 
-/* 5. Trigger the splash on click */
+/* 5. Trigger the splash on click (instant expansion) */
 .stApp :is(.stButton, .stDownloadButton) > button:active::after {
-    transform: translate(-50%, -50%) scale(2.5);
+    transform: translate(-50%, -50%) scale(15);
     opacity: 1;
-    transition: 0s; /* Instant expansion */
+    transition: 0s; 
 }
 .stApp :is(.stButton, .stDownloadButton) > button:active::before {
-    transform: translate(-50%, -50%) scale(3.5);
-    opacity: 1;
-    transition: 0s; /* Instant expansion */
+    transform: translate(-50%, -50%) scale(10);
+    opacity: 0.8;
+    transition: 0s; 
 }
 
 /* 6. Disable ripple for the Home list items and Sidebar to keep them clean */
