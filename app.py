@@ -29,7 +29,7 @@ if "ui_theme" not in st.session_state:
 _THEMES = {
     "light": """
         color-scheme: light;
-        --ground: #f3f5f8; --surface: #ffffff; --surface-2: #e9edf2; --field: #ffffff;
+        --ground: #eef1f7; --surface: #ffffff; --surface-2: #e9edf2; --field: #ffffff;
         --ink: #101318; --ink-2: #3f4856; --ink-3: #5b6573;
         --line: #d3d8e0; --line-strong: #7d8798;
         --acc: #c4006a; --acc-hover: #a30058; --on-acc: #ffffff; --acc-text: #c4006a;
@@ -37,10 +37,16 @@ _THEMES = {
         --yellow: #ffd60a;
         --ok: #0b7a3e; --warn: #8a5300; --bad: #b42318;
         --rail: #0d0f13; --rail-ink: #f2f4f7; --rail-muted: #aeb6c3; --rail-line: #2a2f38; --rail-hover: #1a1e25;
+        --ambient-1: rgba(124,92,255,0.30); --ambient-2: rgba(0,180,216,0.26); --ambient-3: rgba(255,79,160,0.22);
+        --glass-bg: rgba(255,255,255,0.55); --glass-bg-2: rgba(255,255,255,0.38);
+        --glass-field: rgba(255,255,255,0.72); --glass-border: rgba(255,255,255,0.85);
+        --glass-edge: rgba(255,255,255,0.95); --glass-pill: rgba(255,255,255,0.82);
+        --glass-ink: rgba(16,19,24,0.86); --glass-shadow: 0 10px 34px rgba(31,38,80,0.12);
+        --rail-glass: rgba(13,15,19,0.72);
     """,
     "dark": """
         color-scheme: dark;
-        --ground: #0f1115; --surface: #171a20; --surface-2: #1f232b; --field: #1f232b;
+        --ground: #0b0e14; --surface: #171a20; --surface-2: #1f232b; --field: #1f232b;
         --ink: #eef1f5; --ink-2: #b4bcc9; --ink-3: #98a1af;
         --line: #2b313b; --line-strong: #66707f;
         --acc: #ff4fa0; --acc-hover: #ff75b5; --on-acc: #0f1115; --acc-text: #ff6fb3;
@@ -48,6 +54,12 @@ _THEMES = {
         --yellow: #ffd60a;
         --ok: #4cd68a; --warn: #f2b84b; --bad: #ff8a80;
         --rail: #06070a; --rail-ink: #f2f4f7; --rail-muted: #aeb6c3; --rail-line: #2a2f38; --rail-hover: #1a1e25;
+        --ambient-1: rgba(124,92,255,0.32); --ambient-2: rgba(0,212,255,0.24); --ambient-3: rgba(255,79,160,0.22);
+        --glass-bg: rgba(255,255,255,0.075); --glass-bg-2: rgba(255,255,255,0.05);
+        --glass-field: rgba(255,255,255,0.09); --glass-border: rgba(255,255,255,0.16);
+        --glass-edge: rgba(255,255,255,0.28); --glass-pill: rgba(255,255,255,0.14);
+        --glass-ink: rgba(238,241,245,0.9); --glass-shadow: 0 10px 34px rgba(0,0,0,0.45);
+        --rail-glass: rgba(6,7,10,0.62);
     """,
 }
 
@@ -110,7 +122,17 @@ _CSS_BASE = """
 
 /* ---------- base ---------- */
 html { scroll-behavior: smooth; }
-.stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"] { background: var(--ground); color: var(--ink); }
+html, body { background-color: var(--ground); }
+.stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"] { background: transparent; color: var(--ink); }
+.stApp {
+    background-color: var(--ground);
+    background-image:
+        radial-gradient(1100px 760px at 6% -12%, var(--ambient-1), transparent 62%),
+        radial-gradient(980px 700px at 104% 4%, var(--ambient-2), transparent 60%),
+        radial-gradient(900px 860px at 48% 118%, var(--ambient-3), transparent 62%);
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
 .stApp, .stApp :is(p, li, h1, h2, h3, h4, h5, h6, label, input, textarea, button, a, td, th, summary, small, strong, em) {
     font-family: 'Archivo', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
 }
@@ -132,7 +154,13 @@ html { scroll-behavior: smooth; }
 .stApp hr { border: 0; border-top: 1px solid var(--line); margin: 1rem 0; height: 0; background: none; }
 
 /* ---------- sidebar rail ---------- */
-[data-testid="stSidebar"] { background: var(--rail); border-right: 1px solid var(--rail-line); }
+[data-testid="stSidebar"] {
+    background: var(--rail-glass);
+    -webkit-backdrop-filter: blur(26px) saturate(180%);
+    backdrop-filter: blur(26px) saturate(180%);
+    border-right: 1px solid var(--glass-border);
+    box-shadow: inset -1px 0 0 rgba(255,255,255,0.06);
+}
 [data-testid="stSidebar"] > div:first-child { background: transparent; }
 [data-testid="stSidebar"], [data-testid="stSidebar"] :is(p, label, span, div, li, h1, h2, h3, h4) { color: var(--rail-ink); }
 [data-testid="stSidebar"] hr { border-top-color: var(--rail-line); }
@@ -267,7 +295,7 @@ __NAV_ICONS__
     caret-color: var(--acc-text); border: 1px solid var(--line-strong) !important; border-radius: 6px !important;
     box-shadow: none !important; outline: none !important;
 }
-.stApp :is(input, textarea):not([type="checkbox"]):not([type="radio"]):not([role="combobox"]):not([aria-autocomplete]):focus {
+.stApp :is(input, textarea):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([role="combobox"]):not([aria-autocomplete]):focus {
     border-color: var(--acc-text) !important; box-shadow: 0 0 0 1px var(--acc-text) !important;
 }
 .stApp :is(input, textarea):-webkit-autofill { -webkit-box-shadow: 0 0 0 1000px var(--field) inset !important; -webkit-text-fill-color: var(--ink) !important; caret-color: var(--acc-text); }
@@ -351,6 +379,139 @@ div[data-baseweb="popover"] :is(li, [role="option"]):is(:hover, [aria-selected="
 .stApp .chat-float .chat-header { padding: 0.8rem 1.2rem; background: var(--ink); color: var(--ground); font-weight: 700; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
 .stApp .chat-float .chat-header button { background: none; border: none; color: var(--ground); font-size: 1.2rem; cursor: pointer; }
 .stApp .chat-float .chat-body { flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem; }
+
+/* ================= iOS liquid glass layer ================= */
+/* Frosted panels. Placed after the component rules so they win at equal
+   specificity. Pure paint: no widget behaviour is touched. */
+.stApp .slip,
+.stApp .about,
+.stApp .incl,
+.stApp [data-testid="stMain"] [data-testid="stMetric"],
+.stApp [data-testid="stExpander"] details,
+.stApp [data-testid="stAlert"] > div,
+.stApp [data-testid="stChatMessage"] {
+    background: var(--glass-bg) !important;
+    -webkit-backdrop-filter: blur(22px) saturate(180%);
+    backdrop-filter: blur(22px) saturate(180%);
+    border: 1px solid var(--glass-border) !important;
+    border-radius: 18px !important;
+    box-shadow: var(--glass-shadow), inset 0 1px 0 var(--glass-edge);
+}
+
+/* Slip registration marks stay legible on glass. */
+.stApp .slip .cm { border-color: color-mix(in srgb, var(--ink) 42%, transparent); }
+
+/* Sidebar metric chips: darker glass so rail text stays readable. */
+[data-testid="stSidebar"] [data-testid="stMetric"] {
+    background: rgba(255,255,255,0.06) !important;
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
+    backdrop-filter: blur(16px) saturate(160%);
+    border: 1px solid var(--glass-border) !important;
+    border-radius: 14px !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.12);
+}
+
+/* Fields: the element itself paints box + text, so glass can't create a
+   light-on-light (or dark-on-dark) pair. */
+.stApp :is(input, textarea):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([role="combobox"]):not([aria-autocomplete]) {
+    background: var(--glass-field) !important;
+    -webkit-backdrop-filter: blur(14px) saturate(160%);
+    backdrop-filter: blur(14px) saturate(160%);
+    border: 1px solid var(--glass-border) !important;
+    border-radius: 14px !important;
+    box-shadow: inset 0 1px 0 var(--glass-edge);
+}
+.stApp :is(input, textarea):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([role="combobox"]):not([aria-autocomplete]):focus {
+    border-color: var(--acc-text) !important;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--acc-text) 26%, transparent), inset 0 1px 0 var(--glass-edge) !important;
+}
+.stApp :is(input, textarea):-webkit-autofill {
+    -webkit-box-shadow: 0 0 0 1000px var(--glass-field) inset !important;
+    -webkit-text-fill-color: var(--ink) !important;
+}
+
+/* Selectbox control + dropdown as one glass piece. */
+.stApp [data-testid="stSelectbox"] label ~ div {
+    background: var(--glass-field) !important;
+    -webkit-backdrop-filter: blur(14px) saturate(160%);
+    backdrop-filter: blur(14px) saturate(160%);
+    border: 1px solid var(--glass-border) !important;
+    border-radius: 14px !important;
+    box-shadow: inset 0 1px 0 var(--glass-edge);
+}
+div[data-baseweb="popover"], div[data-baseweb="popover"] > div {
+    background: var(--glass-bg) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid var(--glass-border) !important;
+    border-radius: 16px !important;
+    box-shadow: var(--glass-shadow) !important;
+}
+
+/* Buttons: soft glass pills. Feature rows keep their list design. */
+.stApp :is(.stButton, .stDownloadButton) > button {
+    border-radius: 999px;
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    backdrop-filter: blur(18px) saturate(160%);
+    box-shadow: inset 0 1px 0 var(--glass-edge), 0 4px 14px rgba(0,0,0,0.08);
+}
+.stApp [class*="st-key-home_feature_"] .stButton > button {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    box-shadow: none;
+}
+.stApp :is(.stButton, .stDownloadButton) > button:is([kind="primary"], [data-testid="stBaseButton-primary"], [data-testid="baseButton-primary"]) {
+    background: color-mix(in srgb, var(--acc) 88%, transparent) !important;
+    border-color: color-mix(in srgb, var(--acc) 58%, white) !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.45), 0 10px 26px color-mix(in srgb, var(--acc) 36%, transparent) !important;
+}
+.stApp .stDownloadButton > button {
+    background: var(--glass-ink) !important;
+    color: var(--ground) !important;
+    border-color: transparent !important;
+}
+.stApp .stDownloadButton > button:hover {
+    background: color-mix(in srgb, var(--ink) 88%, transparent) !important;
+    color: var(--ground) !important;
+}
+
+/* Tabs become an iOS-style segmented glass control. */
+.stApp [role="tablist"] {
+    background: var(--glass-bg-2) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(180%);
+    backdrop-filter: blur(18px) saturate(180%);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 0.3rem;
+    gap: 0.3rem !important;
+}
+.stApp [role="tab"] { border-radius: 12px; }
+.stApp [role="tab"][aria-selected="true"] {
+    background: var(--glass-pill) !important;
+    box-shadow: inset 0 1px 0 var(--glass-edge), 0 3px 10px rgba(0,0,0,0.14);
+}
+.stApp :is([data-baseweb="tab-highlight"], [role="tablist"] > :not([role="tab"]):nth-last-child(2)) {
+    background: transparent !important;
+    height: 0 !important;
+}
+.stApp :is([data-baseweb="tab-border"], [role="tablist"] > :not([role="tab"]):last-child) {
+    background: transparent !important;
+}
+
+/* Floating assistant panel. */
+.stApp .chat-float {
+    background: var(--glass-bg) !important;
+    -webkit-backdrop-filter: blur(26px) saturate(180%);
+    backdrop-filter: blur(26px) saturate(180%);
+    border: 1px solid var(--glass-border) !important;
+    border-radius: 20px !important;
+    box-shadow: var(--glass-shadow), inset 0 1px 0 var(--glass-edge);
+}
+.stApp .chat-float .chat-header {
+    background: color-mix(in srgb, var(--ink) 72%, transparent) !important;
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+}
 
 @media (max-width: 768px) {
     .stApp .about { grid-template-columns: 1fr; padding: 1.25rem; }
